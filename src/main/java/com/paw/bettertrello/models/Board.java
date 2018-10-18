@@ -1,16 +1,18 @@
 package com.paw.bettertrello.models;
 
 import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
 
-import java.util.ArrayList;
+import java.util.List;
 
 @Document(collection = "boards")
 public class Board {
     @Id
     String id;
     String name;
-    ArrayList<CardList> cardLists;
+    @DBRef
+    List<CardList> cardLists;
 
     public Board() {
     }
@@ -31,11 +33,11 @@ public class Board {
         this.name = name;
     }
 
-    public ArrayList<CardList> getCardLists() {
+    public List<CardList> getCardLists() {
         return cardLists;
     }
 
-    public void setCardLists(ArrayList<CardList> cardLists) {
+    public void setCardLists(List<CardList> cardLists) {
         this.cardLists = cardLists;
     }
 }
