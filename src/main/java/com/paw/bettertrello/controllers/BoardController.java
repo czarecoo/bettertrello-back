@@ -58,25 +58,6 @@ public class BoardController {
 
     @RequestMapping(method=RequestMethod.POST, value="/boards")
     public Board postBoard(@RequestBody Board board) {
-
-        List<CardList> referencedCardLists = new ArrayList<>();
-        List<Card> referencedCards = new ArrayList<>();
-
-        if (board.getCardLists() != null ) {
-            for (CardList cardList : board.getCardLists()) {
-                if (cardList.getCards() != null) {
-                    for (Card card : cardList.getCards()) {
-                        card = cardRepository.save(card);
-                        referencedCards.add(card);
-                    }
-                    cardList.setCards(referencedCards);
-                }
-                cardList = cardListRepository.save(cardList);
-                referencedCardLists.add(cardList);
-            }
-            board.setCardLists(referencedCardLists);
-        }
-
         boardRepository.save(board);
 
         return board;

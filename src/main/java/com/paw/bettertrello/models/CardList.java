@@ -1,5 +1,6 @@
 package com.paw.bettertrello.models;
 
+import com.paw.bettertrello.repositories.util.CascadeSave;
 import lombok.Data;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.DBRef;
@@ -14,5 +15,6 @@ public class CardList {
     String id;
     String name;
     @DBRef
+    @CascadeSave
     List<Card> cards;
 }
