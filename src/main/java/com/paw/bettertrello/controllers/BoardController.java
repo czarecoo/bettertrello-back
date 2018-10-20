@@ -63,6 +63,20 @@ public class BoardController {
         return board;
     }
 
+    @RequestMapping(method=RequestMethod.PUT, value="/boards")
+    public Board updateBoard(@RequestBody Board board) {
+        boardRepository.save(board);
+
+        return board;
+    }
+
+    @RequestMapping(method=RequestMethod.PUT, value="/lists")
+    public CardList updateList(@RequestBody CardList cardList) {
+        cardListRepository.save(cardList);
+
+        return cardList;
+    }
+
     @RequestMapping(method=RequestMethod.DELETE, value="/boards/{id}")
     public String deleteBoard(@PathVariable String id) {
         Optional<Board> optionalBoard = boardRepository.findById(id);
