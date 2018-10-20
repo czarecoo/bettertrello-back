@@ -63,6 +63,38 @@ public class BoardController {
         return board;
     }
 
+    @RequestMapping(method=RequestMethod.POST, value="/boards/{id}/lists")
+    public Board postListToBoard(@RequestBody CardList cardList, @PathVariable String id) {
+        Optional<Board> optionalBoard = boardRepository.findById(id);
+        if(optionalBoard.isPresent()) {
+            Board board = optionalBoard.get();
+            if (board.getCardLists() == null) {
+                board.setCardLists(new ArrayList<CardList>());
+            }
+            board.getCardLists().add(cardList);
+            return boardRepository.save(board);
+        }
+        else {
+            return null;
+        }
+    }
+
+    @RequestMapping(method=RequestMethod.POST, value="/lists/{id}/cards")
+    public CardList postCardToList(@RequestBody Card card, @PathVariable String id) {
+        Optional<CardList> optionalCardList = cardListRepository.findById(id);
+        if(optionalCardList.isPresent()) {
+            CardList cardList = optionalCardList.get();
+            if (cardList.getCards() == null) {
+                cardList.setCards(new ArrayList<Card>());
+            }
+            cardList.getCards().add(card);
+            return cardListRepository.save(cardList);
+        }
+        else {
+            return null;
+        }
+    }
+
     @RequestMapping(method=RequestMethod.PUT, value="/boards")
     public Board updateBoard(@RequestBody Board board) {
         boardRepository.save(board);
