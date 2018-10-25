@@ -14,10 +14,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.context.request.WebRequest;
 
 import java.util.ArrayList;
-import java.util.List;
 import java.util.Optional;
 
 
@@ -114,6 +112,7 @@ public class BoardController {
     }
 
     @ApiOperation(value = "Update a board")
+    @RequestMapping(method=RequestMethod.PUT, value="/boards/{id}")
     public ResponseEntity<?> updateBoard(@PathVariable String id, @RequestBody Board board) {
 
         Optional<Board> optionalBoard;
@@ -128,15 +127,20 @@ public class BoardController {
 
         if (optionalBoard.isPresent()) {
             Board foundBoard = optionalBoard.get();
-            return new ResponseEntity<>(boardRepository.save(foundBoard), HttpStatus.CREATED);
+            if(foundBoard.equals(board)) {
+            	return new ResponseEntity<>(null, HttpStatus.FOUND);
+            }else {
+            	return new ResponseEntity<>(boardRepository.save(board), HttpStatus.OK);
+            }	
         }
         else {
-            return new ResponseEntity<>(boardRepository.save(board), HttpStatus.OK);
+            return new ResponseEntity<>(boardRepository.save(board), HttpStatus.CREATED);
         }
 
     }
 
     @ApiOperation(value = "Update a list")
+    @RequestMapping(method=RequestMethod.PUT, value="/lists/{id}")
     public ResponseEntity<?> updateList(@PathVariable String id, @RequestBody CardList cardList) {
 
         Optional<CardList> optionalCardList;
@@ -150,11 +154,15 @@ public class BoardController {
         optionalCardList = cardListRepository.findById(id);
 
         if (optionalCardList.isPresent()) {
-            CardList foundCardList = optionalCardList.get();
-            return new ResponseEntity<>(cardListRepository.save(foundCardList), HttpStatus.CREATED);
+        	CardList foundCardList = optionalCardList.get();
+            if(foundCardList.equals(cardList)) {
+            	return new ResponseEntity<>(null, HttpStatus.FOUND);
+            }else {
+            	return new ResponseEntity<>(cardListRepository.save(cardList), HttpStatus.OK);
+            }	
         }
         else {
-            return new ResponseEntity<>(cardListRepository.save(cardList), HttpStatus.OK);
+            return new ResponseEntity<>(cardListRepository.save(cardList), HttpStatus.CREATED);
         }
 
     }
