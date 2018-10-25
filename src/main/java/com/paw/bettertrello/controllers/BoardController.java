@@ -11,11 +11,10 @@ import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.context.request.WebRequest;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -24,6 +23,7 @@ import java.util.Optional;
 
 @RestController
 @Api(description="Operations pertaining to boards in application")
+@CrossOrigin(origins = "http://localhost:3000", maxAge = 3600)
 public class BoardController {
 
     @Autowired
@@ -114,19 +114,49 @@ public class BoardController {
     }
 
     @ApiOperation(value = "Update a board")
-    @RequestMapping(method=RequestMethod.PUT, value="/boards")
-    public Board updateBoard(@RequestBody Board board) {
-        boardRepository.save(board);
+    public ResponseEntity<?> updateBoard(@PathVariable String id, @RequestBody Board board) {
 
-        return board;
+        Optional<Board> optionalBoard;
+
+        if (!(board.getId() == null || board.getId().isEmpty())) {
+            if (!board.getId().equals(id)) {
+                return new ResponseEntity<>(HttpStatus.CONFLICT);
+            }
+        }
+
+        optionalBoard = boardRepository.findById(id);
+
+        if (optionalBoard.isPresent()) {
+            Board foundBoard = optionalBoard.get();
+            return new ResponseEntity<>(boardRepository.save(foundBoard), HttpStatus.CREATED);
+        }
+        else {
+            return new ResponseEntity<>(boardRepository.save(board), HttpStatus.OK);
+        }
+
     }
 
     @ApiOperation(value = "Update a list")
-    @RequestMapping(method=RequestMethod.PUT, value="/lists")
-    public CardList updateList(@RequestBody CardList cardList) {
-        cardListRepository.save(cardList);
+    public ResponseEntity<?> updateList(@PathVariable String id, @RequestBody CardList cardList) {
 
-        return cardList;
+        Optional<CardList> optionalCardList;
+
+        if (!(cardList.getId() == null || cardList.getId().isEmpty())) {
+            if (!cardList.getId().equals(id)) {
+                return new ResponseEntity<>(HttpStatus.CONFLICT);
+            }
+        }
+
+        optionalCardList = cardListRepository.findById(id);
+
+        if (optionalCardList.isPresent()) {
+            CardList foundCardList = optionalCardList.get();
+            return new ResponseEntity<>(cardListRepository.save(foundCardList), HttpStatus.CREATED);
+        }
+        else {
+            return new ResponseEntity<>(cardListRepository.save(cardList), HttpStatus.OK);
+        }
+
     }
 
     @ApiOperation(value = "Delete a board")
@@ -135,6 +165,26 @@ public class BoardController {
         Optional<Board> optionalBoard = boardRepository.findById(id);
         Board board = optionalBoard.get();
         boardRepository.delete(board);
+
+        return "";
+    }
+
+    @ApiOperation(value = "Delete a list")
+    @RequestMapping(method=RequestMethod.DELETE, value="/lists/{id}")
+    public String deleteList(@PathVariable String id) {
+        Optional<CardList> optionalCardList = cardListRepository.findById(id);
+        CardList cardList = optionalCardList.get();
+        cardListRepository.delete(cardList);
+
+        return "";
+    }
+
+    @ApiOperation(value = "Delete a card")
+    @RequestMapping(method=RequestMethod.DELETE, value="/cards/{id}")
+    public String deleteCard(@PathVariable String id) {
+        Optional<Card> optionalCard = cardRepository.findById(id);
+        Card card = optionalCard.get();
+        cardRepository.delete(card);
 
         return "";
     }
