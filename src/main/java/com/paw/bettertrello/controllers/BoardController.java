@@ -8,6 +8,8 @@ import com.paw.bettertrello.repositories.CardListRepository;
 import com.paw.bettertrello.repositories.CardRepository;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiResponse;
+import io.swagger.annotations.ApiResponses;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -30,6 +32,11 @@ public class BoardController {
     CardListRepository cardListRepository;
     @Autowired
     CardRepository cardRepository;
+
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Successfully retrieved board")
+    }
+    )
 
     @ApiOperation(value = "Search a board with an ID",response = Optional.class)
     @RequestMapping(method=RequestMethod.GET, value="/boards")
