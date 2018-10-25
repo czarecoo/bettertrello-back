@@ -17,9 +17,10 @@ import static springfox.documentation.builders.PathSelectors.regex;
 @EnableSwagger2
 public class SwaggerConfig extends WebMvcConfigurationSupport {
     @Bean
-    public Docket productApi() {
+    public Docket boardControllerApi() {
         return new Docket(DocumentationType.SWAGGER_2)
                 .select()                 .apis(RequestHandlerSelectors.basePackage("com.paw.bettertrello.controllers"))
+                .paths(regex("/board.*"))
                 .build()
                 .apiInfo(metaData());
     }

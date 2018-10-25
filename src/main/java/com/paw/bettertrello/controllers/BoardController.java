@@ -6,6 +6,8 @@ import com.paw.bettertrello.models.CardList;
 import com.paw.bettertrello.repositories.BoardRepository;
 import com.paw.bettertrello.repositories.CardListRepository;
 import com.paw.bettertrello.repositories.CardRepository;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -19,6 +21,7 @@ import java.util.Optional;
 
 
 @RestController
+@Api(description="Operations pertaining to boards in application")
 public class BoardController {
 
     @Autowired
@@ -28,34 +31,40 @@ public class BoardController {
     @Autowired
     CardRepository cardRepository;
 
+    @ApiOperation(value = "Search a board with an ID",response = Optional.class)
     @RequestMapping(method=RequestMethod.GET, value="/boards")
     public Iterable<Board> getBoards() {
         return boardRepository.findAll();
     }
 
+    @ApiOperation(value = "Search a board with an ID",response = Optional.class)
     @RequestMapping(method=RequestMethod.GET, value="/boards/{id}")
     public Optional<Board> getBoard(@PathVariable String id) {
         return boardRepository.findById(id);
     }
 
+    @ApiOperation(value = "Search a board with an ID, a get's list from there",response = Iterable.class)
     @RequestMapping(method=RequestMethod.GET, value="/boards/{id}/lists")
     public Iterable<CardList> getListsFromBoard(@PathVariable String id) {
         Optional<Board> optionalBoard = boardRepository.findById(id);
         return optionalBoard.get().getCardLists();
     }
 
+    @ApiOperation(value = "Search a List with an ID",response = Optional.class)
     @RequestMapping(method=RequestMethod.GET, value="/lists/{id}")
     public Optional<CardList> getList(@PathVariable String id) {
         Optional<CardList> optionalCardList = cardListRepository.findById(id);
         return optionalCardList;
     }
 
+    @ApiOperation(value = "Search a list with an ID, a get's cards from there",response = Optional.class)
     @RequestMapping(method=RequestMethod.GET, value="/lists/{id}/cards")
     public Iterable<Card> getCardsFromList(@PathVariable String id) {
         Optional<CardList> optionalCardList = cardListRepository.findById(id);
         return optionalCardList.get().getCards();
     }
 
+    @ApiOperation(value = "Add a board",response = Board.class)
     @RequestMapping(method=RequestMethod.POST, value="/boards")
     public Board postBoard(@RequestBody Board board) {
         boardRepository.save(board);
@@ -63,6 +72,7 @@ public class BoardController {
         return board;
     }
 
+    @ApiOperation(value = "Add a List to Board",response = Board.class)
     @RequestMapping(method=RequestMethod.POST, value="/boards/{id}/lists")
     public Board postListToBoard(@RequestBody CardList cardList, @PathVariable String id) {
         Optional<Board> optionalBoard = boardRepository.findById(id);
@@ -79,6 +89,7 @@ public class BoardController {
         }
     }
 
+    @ApiOperation(value = "Add a Card to List",response = Board.class)
     @RequestMapping(method=RequestMethod.POST, value="/lists/{id}/cards")
     public CardList postCardToList(@RequestBody Card card, @PathVariable String id) {
         Optional<CardList> optionalCardList = cardListRepository.findById(id);
@@ -95,6 +106,7 @@ public class BoardController {
         }
     }
 
+    @ApiOperation(value = "Update a board")
     @RequestMapping(method=RequestMethod.PUT, value="/boards")
     public Board updateBoard(@RequestBody Board board) {
         boardRepository.save(board);
@@ -102,6 +114,7 @@ public class BoardController {
         return board;
     }
 
+    @ApiOperation(value = "Update a list")
     @RequestMapping(method=RequestMethod.PUT, value="/lists")
     public CardList updateList(@RequestBody CardList cardList) {
         cardListRepository.save(cardList);
@@ -109,6 +122,7 @@ public class BoardController {
         return cardList;
     }
 
+    @ApiOperation(value = "Delete a board")
     @RequestMapping(method=RequestMethod.DELETE, value="/boards/{id}")
     public String deleteBoard(@PathVariable String id) {
         Optional<Board> optionalBoard = boardRepository.findById(id);
