@@ -26,10 +26,6 @@ public class BoardController {
 
     @Autowired
     BoardRepository boardRepository;
-    @Autowired
-    CardListRepository cardListRepository;
-    @Autowired
-    CardRepository cardRepository;
 
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Successfully retrieved board")
@@ -55,20 +51,6 @@ public class BoardController {
         return optionalBoard.get().getCardLists();
     }
 
-    @ApiOperation(value = "Search a List with an ID",response = Optional.class)
-    @RequestMapping(method=RequestMethod.GET, value="/lists/{id}")
-    public Optional<CardList> getList(@PathVariable String id) {
-        Optional<CardList> optionalCardList = cardListRepository.findById(id);
-        return optionalCardList;
-    }
-
-    @ApiOperation(value = "Search a list with an ID, a get's cards from there",response = Optional.class)
-    @RequestMapping(method=RequestMethod.GET, value="/lists/{id}/cards")
-    public Iterable<Card> getCardsFromList(@PathVariable String id) {
-        Optional<CardList> optionalCardList = cardListRepository.findById(id);
-        return optionalCardList.get().getCards();
-    }
-
     @ApiOperation(value = "Add a board",response = Board.class)
     @RequestMapping(method=RequestMethod.POST, value="/boards")
     public Board postBoard(@RequestBody Board board) {
@@ -77,39 +59,6 @@ public class BoardController {
         return board;
     }
 
-    @ApiOperation(value = "Add a List to Board",response = Board.class)
-    @RequestMapping(method=RequestMethod.POST, value="/boards/{id}/lists")
-    public Board postListToBoard(@RequestBody CardList cardList, @PathVariable String id) {
-        Optional<Board> optionalBoard = boardRepository.findById(id);
-        if(optionalBoard.isPresent()) {
-            Board board = optionalBoard.get();
-            if (board.getCardLists() == null) {
-                board.setCardLists(new ArrayList<CardList>());
-            }
-            board.getCardLists().add(cardList);
-            return boardRepository.save(board);
-        }
-        else {
-            return null;
-        }
-    }
-
-    @ApiOperation(value = "Add a Card to List",response = Board.class)
-    @RequestMapping(method=RequestMethod.POST, value="/lists/{id}/cards")
-    public CardList postCardToList(@RequestBody Card card, @PathVariable String id) {
-        Optional<CardList> optionalCardList = cardListRepository.findById(id);
-        if(optionalCardList.isPresent()) {
-            CardList cardList = optionalCardList.get();
-            if (cardList.getCards() == null) {
-                cardList.setCards(new ArrayList<Card>());
-            }
-            cardList.getCards().add(card);
-            return cardListRepository.save(cardList);
-        }
-        else {
-            return null;
-        }
-    }
 
     @ApiOperation(value = "Update a board")
     @RequestMapping(method=RequestMethod.PUT, value="/boards/{id}")
@@ -139,33 +88,7 @@ public class BoardController {
 
     }
 
-    @ApiOperation(value = "Update a list")
-    @RequestMapping(method=RequestMethod.PUT, value="/lists/{id}")
-    public ResponseEntity<?> updateList(@PathVariable String id, @RequestBody CardList cardList) {
 
-        Optional<CardList> optionalCardList;
-
-        if (!(cardList.getId() == null || cardList.getId().isEmpty())) {
-            if (!cardList.getId().equals(id)) {
-                return new ResponseEntity<>(HttpStatus.CONFLICT);
-            }
-        }
-
-        optionalCardList = cardListRepository.findById(id);
-
-        if (optionalCardList.isPresent()) {
-        	CardList foundCardList = optionalCardList.get();
-            if(foundCardList.equals(cardList)) {
-            	return new ResponseEntity<>(null, HttpStatus.FOUND);
-            }else {
-            	return new ResponseEntity<>(cardListRepository.save(cardList), HttpStatus.OK);
-            }	
-        }
-        else {
-            return new ResponseEntity<>(cardListRepository.save(cardList), HttpStatus.CREATED);
-        }
-
-    }
 
     @ApiOperation(value = "Delete a board")
     @RequestMapping(method=RequestMethod.DELETE, value="/boards/{id}")
@@ -177,23 +100,4 @@ public class BoardController {
         return "";
     }
 
-    @ApiOperation(value = "Delete a list")
-    @RequestMapping(method=RequestMethod.DELETE, value="/lists/{id}")
-    public String deleteList(@PathVariable String id) {
-        Optional<CardList> optionalCardList = cardListRepository.findById(id);
-        CardList cardList = optionalCardList.get();
-        cardListRepository.delete(cardList);
-
-        return "";
-    }
-
-    @ApiOperation(value = "Delete a card")
-    @RequestMapping(method=RequestMethod.DELETE, value="/cards/{id}")
-    public String deleteCard(@PathVariable String id) {
-        Optional<Card> optionalCard = cardRepository.findById(id);
-        Card card = optionalCard.get();
-        cardRepository.delete(card);
-
-        return "";
-    }
 }
