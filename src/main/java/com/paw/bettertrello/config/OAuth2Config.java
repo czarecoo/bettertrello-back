@@ -42,7 +42,6 @@ public class OAuth2Config extends AuthorizationServerConfigurerAdapter {
     public void configure(ClientDetailsServiceConfigurer clients) throws Exception {
         String secretEncoded = passwordEncoder().encode("secret");
         clients.inMemory().withClient("frontend").secret(secretEncoded).accessTokenValiditySeconds(3600)
-                .scopes("read", "write").authorizedGrantTypes("password", "refresh_token").resourceIds("resource")
-                .accessTokenValiditySeconds(3600);
+                .scopes("read", "write").authorizedGrantTypes("password", "refresh_token");
     }
 }
