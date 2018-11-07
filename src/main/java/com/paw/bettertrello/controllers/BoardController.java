@@ -71,7 +71,13 @@ public class BoardController {
 
     @ApiOperation(value = "Update a board")
     @RequestMapping(method=RequestMethod.PUT, value="/boards/{id}")
-    public ResponseEntity<?> updateBoard(@PathVariable String id, @RequestBody Board board) {
+    public ResponseEntity<?> updateBoard(@PathVariable String id, @RequestBody Board board, Principal principal) {
+
+        String username = principal.getName();
+
+        if (!board.getOwnerUsernames().contains(username)) {
+            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+        }
 
         Optional<Board> optionalBoard;
 
