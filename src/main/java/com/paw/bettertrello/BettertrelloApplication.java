@@ -10,7 +10,6 @@ import javax.servlet.Filter;
 
 
 @SpringBootApplication
-@EnableResourceServer
 public class BettertrelloApplication {
 
 	@Bean
