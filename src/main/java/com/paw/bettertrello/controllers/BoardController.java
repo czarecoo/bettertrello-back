@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Optional;
 
 
@@ -54,10 +55,17 @@ public class BoardController {
 
     @ApiOperation(value = "Add a board",response = Board.class)
     @RequestMapping(method=RequestMethod.POST, value="/boards")
-    public Board postBoard(@RequestBody Board board) {
-        boardRepository.save(board);
+    public ResponseEntity<?> postBoard(@RequestBody Board board, Principal principal) {
 
-        return board;
+        String username = principal.getName();
+
+        if (board.getOwnerUsernames() == null) {
+            board.setOwnerUsernames(Arrays.asList(username));
+        }
+        else if (!board.getOwnerUsernames().contains(username)) {
+            board.getOwnerUsernames().add(username);
+        }
+        return new ResponseEntity<>(boardRepository.save(board), HttpStatus.CREATED);
     }
 
 
