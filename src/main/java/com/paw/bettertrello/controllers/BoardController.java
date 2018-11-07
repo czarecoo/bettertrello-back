@@ -36,8 +36,8 @@ public class BoardController {
 
     @ApiOperation(value = "Search all boards",response = Optional.class)
     @RequestMapping(method=RequestMethod.GET, value="/boards")
-    public Iterable<Board> getBoards(Principal principal) {
-        return boardRepository.findAllByOwnerUsernamesContaining(principal.getName());
+    public ResponseEntity<?> getBoards(Principal principal) {
+        return new ResponseEntity<>(boardRepository.findAllByOwnerUsernamesContaining(principal.getName()), HttpStatus.OK);
     }
 
     @ApiOperation(value = "Search a board with an ID",response = Optional.class)
