@@ -42,8 +42,17 @@ public class BoardController {
 
     @ApiOperation(value = "Search a board with an ID",response = Optional.class)
     @RequestMapping(method=RequestMethod.GET, value="/boards/{id}")
-    public Optional<Board> getBoard(@PathVariable String id) {
-        return boardRepository.findById(id);
+    public ResponseEntity<?> getBoard(@PathVariable String id, Principal principal) {
+        String username = principal.getName();
+        Optional<Board> optionalBoard = boardRepository.findById(id);
+        if (optionalBoard.isPresent()) {
+            Board board = optionalBoard.get();
+            if (board.getOwnerUsernames().contains(username)) {
+                return new ResponseEntity<>(board, HttpStatus.OK);
+            }
+            else return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+        }
+        else return new ResponseEntity<>(HttpStatus.NOT_FOUND);
     }
 
     @ApiOperation(value = "Search a board with an ID, a get's list from there",response = Iterable.class)
