@@ -57,9 +57,17 @@ public class BoardController {
 
     @ApiOperation(value = "Search a board with an ID, a get's list from there",response = Iterable.class)
     @RequestMapping(method=RequestMethod.GET, value="/boards/{id}/lists")
-    public Iterable<CardList> getListsFromBoard(@PathVariable String id) {
+    public ResponseEntity<?> getListsFromBoard(@PathVariable String id, Principal principal) {
+        String username = principal.getName();
         Optional<Board> optionalBoard = boardRepository.findById(id);
-        return optionalBoard.get().getCardLists();
+        if (optionalBoard.isPresent()) {
+            Board board = optionalBoard.get();
+            if (board.getOwnerUsernames().contains(username)) {
+                return new ResponseEntity<>(board.getCardLists(), HttpStatus.OK);
+            }
+            else return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+        }
+        else return new ResponseEntity<>(HttpStatus.NOT_FOUND);
     }
 
     @ApiOperation(value = "Add a board",response = Board.class)
@@ -116,12 +124,18 @@ public class BoardController {
 
     @ApiOperation(value = "Delete a board")
     @RequestMapping(method=RequestMethod.DELETE, value="/boards/{id}")
-    public String deleteBoard(@PathVariable String id) {
+    public ResponseEntity<?> deleteBoard(@PathVariable String id, Principal principal) {
+        String username = principal.getName();
         Optional<Board> optionalBoard = boardRepository.findById(id);
-        Board board = optionalBoard.get();
-        boardRepository.delete(board);
-
-        return "";
+        if (optionalBoard.isPresent()) {
+            Board board = optionalBoard.get();
+            if (board.getOwnerUsernames().contains(username)) {
+                boardRepository.delete(board);
+                return new ResponseEntity<>(HttpStatus.OK);
+            }
+            else return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+        }
+        else return new ResponseEntity<>(HttpStatus.NOT_FOUND);
     }
 
 }
