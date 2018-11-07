@@ -17,6 +17,7 @@ public class Board {
     String id;
     @ApiModelProperty(notes = "The name of the Board")
     String name;
+    List<String> ownerUsernames;
     @DBRef
     @CascadeSave
     @ApiModelProperty(notes = "List of CardLists")
