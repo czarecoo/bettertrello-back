@@ -15,6 +15,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.security.Principal;
 import java.util.ArrayList;
 import java.util.Optional;
 
@@ -32,10 +33,10 @@ public class BoardController {
     }
     )
 
-    @ApiOperation(value = "Search a board with an ID",response = Optional.class)
+    @ApiOperation(value = "Search all boards",response = Optional.class)
     @RequestMapping(method=RequestMethod.GET, value="/boards")
-    public Iterable<Board> getBoards() {
-        return boardRepository.findAll();
+    public Iterable<Board> getBoards(Principal principal) {
+        return boardRepository.findAllByOwnerUsernamesContaining(principal.getName());
     }
 
     @ApiOperation(value = "Search a board with an ID",response = Optional.class)
@@ -77,10 +78,10 @@ public class BoardController {
         if (optionalBoard.isPresent()) {
             Board foundBoard = optionalBoard.get();
             if(foundBoard.equals(board)) {
-            	return new ResponseEntity<>(null, HttpStatus.FOUND);
+                return new ResponseEntity<>(null, HttpStatus.FOUND);
             }else {
-            	return new ResponseEntity<>(boardRepository.save(board), HttpStatus.OK);
-            }	
+                return new ResponseEntity<>(boardRepository.save(board), HttpStatus.OK);
+            }
         }
         else {
             return new ResponseEntity<>(boardRepository.save(board), HttpStatus.CREATED);
