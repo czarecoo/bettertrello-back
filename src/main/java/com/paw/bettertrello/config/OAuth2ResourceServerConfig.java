@@ -16,7 +16,7 @@ public class OAuth2ResourceServerConfig extends ResourceServerConfigurerAdapter 
                 .csrf().disable()
                 .authorizeRequests()
                 .antMatchers("/users").permitAll()
-                .antMatchers(HttpMethod.POST, "/oauth/token").permitAll()
+                .antMatchers(HttpMethod.OPTIONS, "/oauth/token").permitAll()
                 .anyRequest().authenticated();
     }
 }
