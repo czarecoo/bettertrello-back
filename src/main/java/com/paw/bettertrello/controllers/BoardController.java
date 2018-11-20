@@ -15,7 +15,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.security.Principal;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Optional;
 
 
@@ -32,37 +34,67 @@ public class BoardController {
     }
     )
 
-    @ApiOperation(value = "Search a board with an ID",response = Optional.class)
+    @ApiOperation(value = "Search all boards",response = Optional.class)
     @RequestMapping(method=RequestMethod.GET, value="/boards")
-    public Iterable<Board> getBoards() {
-        return boardRepository.findAll();
+    public ResponseEntity<?> getBoards(Principal principal) {
+        return new ResponseEntity<>(boardRepository.findAllByOwnerUsernamesContaining(principal.getName()), HttpStatus.OK);
     }
 
     @ApiOperation(value = "Search a board with an ID",response = Optional.class)
     @RequestMapping(method=RequestMethod.GET, value="/boards/{id}")
-    public Optional<Board> getBoard(@PathVariable String id) {
-        return boardRepository.findById(id);
+    public ResponseEntity<?> getBoard(@PathVariable String id, Principal principal) {
+        String username = principal.getName();
+        Optional<Board> optionalBoard = boardRepository.findById(id);
+        if (optionalBoard.isPresent()) {
+            Board board = optionalBoard.get();
+            if (board.getOwnerUsernames().contains(username)) {
+                return new ResponseEntity<>(board, HttpStatus.OK);
+            }
+            else return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+        }
+        else return new ResponseEntity<>(HttpStatus.NOT_FOUND);
     }
 
     @ApiOperation(value = "Search a board with an ID, a get's list from there",response = Iterable.class)
     @RequestMapping(method=RequestMethod.GET, value="/boards/{id}/lists")
-    public Iterable<CardList> getListsFromBoard(@PathVariable String id) {
+    public ResponseEntity<?> getListsFromBoard(@PathVariable String id, Principal principal) {
+        String username = principal.getName();
         Optional<Board> optionalBoard = boardRepository.findById(id);
-        return optionalBoard.get().getCardLists();
+        if (optionalBoard.isPresent()) {
+            Board board = optionalBoard.get();
+            if (board.getOwnerUsernames().contains(username)) {
+                return new ResponseEntity<>(board.getCardLists(), HttpStatus.OK);
+            }
+            else return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+        }
+        else return new ResponseEntity<>(HttpStatus.NOT_FOUND);
     }
 
     @ApiOperation(value = "Add a board",response = Board.class)
     @RequestMapping(method=RequestMethod.POST, value="/boards")
-    public Board postBoard(@RequestBody Board board) {
-        boardRepository.save(board);
+    public ResponseEntity<?> postBoard(@RequestBody Board board, Principal principal) {
 
-        return board;
+        String username = principal.getName();
+
+        if (board.getOwnerUsernames() == null) {
+            board.setOwnerUsernames(Arrays.asList(username));
+        }
+        else if (!board.getOwnerUsernames().contains(username)) {
+            board.getOwnerUsernames().add(username);
+        }
+        return new ResponseEntity<>(boardRepository.save(board), HttpStatus.CREATED);
     }
 
 
     @ApiOperation(value = "Update a board")
     @RequestMapping(method=RequestMethod.PUT, value="/boards/{id}")
-    public ResponseEntity<?> updateBoard(@PathVariable String id, @RequestBody Board board) {
+    public ResponseEntity<?> updateBoard(@PathVariable String id, @RequestBody Board board, Principal principal) {
+
+        String username = principal.getName();
+
+        if (!board.getOwnerUsernames().contains(username)) {
+            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+        }
 
         Optional<Board> optionalBoard;
 
@@ -77,10 +109,10 @@ public class BoardController {
         if (optionalBoard.isPresent()) {
             Board foundBoard = optionalBoard.get();
             if(foundBoard.equals(board)) {
-            	return new ResponseEntity<>(null, HttpStatus.FOUND);
+                return new ResponseEntity<>(null, HttpStatus.FOUND);
             }else {
-            	return new ResponseEntity<>(boardRepository.save(board), HttpStatus.OK);
-            }	
+                return new ResponseEntity<>(boardRepository.save(board), HttpStatus.OK);
+            }
         }
         else {
             return new ResponseEntity<>(boardRepository.save(board), HttpStatus.CREATED);
@@ -92,12 +124,18 @@ public class BoardController {
 
     @ApiOperation(value = "Delete a board")
     @RequestMapping(method=RequestMethod.DELETE, value="/boards/{id}")
-    public String deleteBoard(@PathVariable String id) {
+    public ResponseEntity<?> deleteBoard(@PathVariable String id, Principal principal) {
+        String username = principal.getName();
         Optional<Board> optionalBoard = boardRepository.findById(id);
-        Board board = optionalBoard.get();
-        boardRepository.delete(board);
-
-        return "";
+        if (optionalBoard.isPresent()) {
+            Board board = optionalBoard.get();
+            if (board.getOwnerUsernames().contains(username)) {
+                boardRepository.delete(board);
+                return new ResponseEntity<>(HttpStatus.OK);
+            }
+            else return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+        }
+        else return new ResponseEntity<>(HttpStatus.NOT_FOUND);
     }
 
 }
