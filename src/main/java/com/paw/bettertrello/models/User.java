@@ -18,7 +18,7 @@ public class User implements UserDetails {
     String id;
     String username;
     String password;
-    boolean isEnabled;
+    boolean isEnabled = true; //by default accounts are verified
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {

@@ -19,10 +19,8 @@ public class UserController {
     @Autowired
     UserRepository userRepository;
 
-    @Bean
-    public PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder();
-    }
+    @Autowired
+    public PasswordEncoder passwordEncoder;
 
     @RequestMapping(method= RequestMethod.POST, value="/users")
     public ResponseEntity<?> postUser(@RequestBody User user) {
@@ -40,7 +38,7 @@ public class UserController {
             return new ResponseEntity<>("Username already exists", HttpStatus.CONFLICT);
         }
         else {
-            user.setPassword(passwordEncoder().encode(user.getPassword()));
+            user.setPassword(passwordEncoder.encode(user.getPassword()));
             return new ResponseEntity<>(userRepository.save(user), HttpStatus.CREATED);
         }
     }
