@@ -89,9 +89,11 @@ public class CardListController {
             if (!cardList.getId().equals(id)) {
                 return new ResponseEntity<>(HttpStatus.CONFLICT);
             }
+            optionalCardList = cardListRepository.findById(cardList.getId());
         }
-
-        optionalCardList = cardListRepository.findById(id);
+        else {
+            optionalCardList = cardListRepository.findById(id);
+        }
 
         if (optionalCardList.isPresent()) {
             CardList foundCardList = optionalCardList.get();
