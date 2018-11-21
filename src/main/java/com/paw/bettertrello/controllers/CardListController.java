@@ -13,6 +13,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.lang.reflect.Field;
 import java.security.Principal;
 import java.util.ArrayList;
 import java.util.Optional;
@@ -80,7 +81,7 @@ public class CardListController {
 
     @ApiOperation(value = "Update a list")
     @RequestMapping(method=RequestMethod.PUT, value="/lists/{id}")
-    public ResponseEntity<?> updateList(@PathVariable String id, @RequestBody CardList cardList, Principal principal) {
+    public ResponseEntity<?> putList(@PathVariable String id, @RequestBody CardList cardList, Principal principal) {
         String username = principal.getName();
         Optional<CardList> optionalCardList;
 
@@ -109,6 +110,34 @@ public class CardListController {
             return new ResponseEntity<>(cardListRepository.save(cardList), HttpStatus.CREATED);
         }
 
+    }
+
+    @RequestMapping(method=RequestMethod.PATCH, value="/boards/{id}")
+    public ResponseEntity<?> patchList(@PathVariable String id, @RequestBody CardList patchData, Principal principal) {
+
+        String username = principal.getName();
+
+        Optional<CardList> optionalList;
+
+        if (!(patchData.getId() == null || patchData.getId().isEmpty())) {
+            if (!patchData.getId().equals(id)) {
+                return new ResponseEntity<>(HttpStatus.CONFLICT);
+            }
+            optionalList = cardListRepository.findById(patchData.getId());
+        }
+        else {
+            optionalList = cardListRepository.findById(id);
+        }
+
+        if (optionalList.isPresent()) {
+            CardList foundCardList = optionalList.get();
+            ResponseEntity<?> authorizationCheckResult = checkAuthorization(username, foundCardList, OkStatusBodyContent.EMPTY);
+            if (authorizationCheckResult.getStatusCode() != HttpStatus.OK) {
+                return authorizationCheckResult;
+            }
+            return new ResponseEntity<>(cardListRepository.save(patchCardList(foundCardList, patchData)), HttpStatus.OK);
+        }
+        return null;
     }
 
     @ApiOperation(value = "Delete a list")
@@ -151,5 +180,21 @@ public class CardListController {
         else {
             return new ResponseEntity<>("Parent board not found", HttpStatus.BAD_REQUEST);
         }
+    }
+
+    //Kopyrajt © 2018 by Marcin Kapelan
+    private CardList patchCardList(CardList toPatch, CardList patchData) {
+        for (Field field : patchData.getClass().getDeclaredFields()){
+            field.setAccessible(true);
+            try {
+                if (field.get(patchData) != null) {
+                    System.out.println(field.getName());
+                    field.set(toPatch, field.get(patchData));
+                }
+            } catch (IllegalAccessException e) {
+                e.printStackTrace();
+            }
+        }
+        return toPatch;
     }
 }
