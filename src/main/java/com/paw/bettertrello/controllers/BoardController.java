@@ -15,6 +15,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.lang.reflect.Field;
 import java.security.Principal;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -112,7 +113,7 @@ public class BoardController {
 
     @ApiOperation(value = "Update a board")
     @RequestMapping(method=RequestMethod.PUT, value="/boards/{id}")
-    public ResponseEntity<?> updateBoard(@PathVariable String id, @RequestBody Board board, Principal principal) {
+    public ResponseEntity<?> putBoard(@PathVariable String id, @RequestBody Board board, Principal principal) {
 
         String username = principal.getName();
 
@@ -126,9 +127,11 @@ public class BoardController {
             if (!board.getId().equals(id)) {
                 return new ResponseEntity<>(HttpStatus.CONFLICT);
             }
+            optionalBoard = boardRepository.findById(board.getId());
         }
-
-        optionalBoard = boardRepository.findById(id);
+        else {
+            optionalBoard = boardRepository.findById(id);
+        }
 
         if (optionalBoard.isPresent()) {
             Board foundBoard = optionalBoard.get();
@@ -142,6 +145,33 @@ public class BoardController {
             return new ResponseEntity<>(boardRepository.save(board), HttpStatus.CREATED);
         }
 
+    }
+
+    @RequestMapping(method=RequestMethod.PATCH, value="/boards/{id}")
+    public ResponseEntity<?> patchBoard(@PathVariable String id, @RequestBody Board patchData, Principal principal) {
+
+        String username = principal.getName();
+
+        Optional<Board> optionalBoard;
+
+        if (!(patchData.getId() == null || patchData.getId().isEmpty())) {
+            if (!patchData.getId().equals(id)) {
+                return new ResponseEntity<>(HttpStatus.CONFLICT);
+            }
+            optionalBoard = boardRepository.findById(patchData.getId());
+        }
+        else {
+            optionalBoard = boardRepository.findById(id);
+        }
+
+        if (optionalBoard.isPresent()) {
+            Board foundBoard = optionalBoard.get();
+            if (!foundBoard.getOwnerUsernames().contains(username)) {
+                return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+            }
+            return new ResponseEntity<>(boardRepository.save(patchBoard(foundBoard, patchData)), HttpStatus.OK);
+        }
+        return null;
     }
 
     @ApiOperation(value = "Delete a board")
@@ -160,4 +190,19 @@ public class BoardController {
         else return new ResponseEntity<>(HttpStatus.NOT_FOUND);
     }
 
+    //Kopyrajt © 2018 by Marcin Kapelan
+    private Board patchBoard(Board toPatch, Board patchData) {
+        for (Field field : patchData.getClass().getDeclaredFields()){
+            field.setAccessible(true);
+            try {
+                if (field.get(patchData) != null) {
+                    System.out.println(field.getName());
+                    field.set(toPatch, field.get(patchData));
+                }
+            } catch (IllegalAccessException e) {
+                e.printStackTrace();
+            }
+        }
+        return toPatch;
+    }
 }
