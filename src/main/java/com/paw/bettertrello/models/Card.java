@@ -5,6 +5,8 @@ import lombok.Data;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
+import java.util.List;
+
 @Data
 @Document(collection = "cards")
 public class Card {
@@ -13,5 +15,6 @@ public class Card {
     String id;
     @ApiModelProperty(notes = "The name of the Card")
     String name;
+    List<ActivityData> activities;
     String parentBoardId;
 }

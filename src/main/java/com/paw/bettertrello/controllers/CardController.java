@@ -1,5 +1,6 @@
 package com.paw.bettertrello.controllers;
 
+import com.paw.bettertrello.models.ActivityData;
 import com.paw.bettertrello.models.Board;
 import com.paw.bettertrello.models.Card;
 import com.paw.bettertrello.repositories.BoardRepository;
@@ -11,8 +12,10 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.lang.reflect.Field;
 import java.security.Principal;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.List;
 import java.util.Optional;
 
 @RestController
@@ -48,6 +51,12 @@ public class CardController {
             if (authorizationCheckResult.getStatusCode() != HttpStatus.OK) {
                 return authorizationCheckResult;
             }
+
+            //Handle list of ActivityData from patchData (add date and user to the last element that we suppose it was appended)
+            if (patchData.getActivities() != null) {
+                handlePatchingActivityData(patchData, username);
+            }
+
             return new ResponseEntity<>(cardRepository.save(ControllerUtils.patchObject(foundCard, patchData)), HttpStatus.OK);
         }
         return null;
@@ -90,5 +99,22 @@ public class CardController {
         else {
             return new ResponseEntity<>("Parent board not found", HttpStatus.BAD_REQUEST);
         }
+    }
+
+    private Card handlePatchingActivityData(Card patchData, String username) {
+        List<ActivityData> activities = patchData.getActivities();
+        ActivityData lastActivity = patchData.getActivities().get(activities.size() - 1);
+        if (lastActivity.getUsername() == null || lastActivity.getUsername().isEmpty()) {
+            lastActivity.setUsername(username);
+        }
+        if (lastActivity.getDate() == null || lastActivity.getDate().isEmpty()) {
+            DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss");
+            LocalDateTime now = LocalDateTime.now();
+            lastActivity.setDate(dateTimeFormatter.format(now));
+        }
+        if (lastActivity.getData() == null) {
+            lastActivity.setData("");
+        }
+        return patchData;
     }
 }
