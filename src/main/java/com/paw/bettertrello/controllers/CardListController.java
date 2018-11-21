@@ -112,7 +112,7 @@ public class CardListController {
 
     }
 
-    @RequestMapping(method=RequestMethod.PATCH, value="/boards/{id}")
+    @RequestMapping(method=RequestMethod.PATCH, value="/lists/{id}")
     public ResponseEntity<?> patchList(@PathVariable String id, @RequestBody CardList patchData, Principal principal) {
 
         String username = principal.getName();
