@@ -71,6 +71,9 @@ public class CardListController {
                 cardList.setCards(new ArrayList<>());
             }
             card.setParentBoardId(cardList.getParentBoardId());
+            if (card.getActivities() == null) {
+                card.setActivities(new ArrayList<>());
+            }
             cardList.getCards().add(card);
             return new ResponseEntity<>(cardListRepository.save(cardList), HttpStatus.CREATED);
         }
