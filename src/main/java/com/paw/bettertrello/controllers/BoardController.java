@@ -85,6 +85,30 @@ public class BoardController {
         return new ResponseEntity<>(boardRepository.save(board), HttpStatus.CREATED);
     }
 
+    @ApiOperation(value = "Add a List to Board",response = Board.class)
+    @RequestMapping(method=RequestMethod.POST, value="/boards/{id}/lists")
+    public ResponseEntity<?> postListToBoard(@RequestBody CardList cardList, @PathVariable String id, Principal principal) {
+        String username = principal.getName();
+        Optional<Board> optionalBoard = boardRepository.findById(id);
+        if(optionalBoard.isPresent()) {
+            Board board = optionalBoard.get();
+            if (cardList.getParentBoardId() != null && !cardList.getParentBoardId().equals(id)) {
+                return new ResponseEntity<>(HttpStatus.CONFLICT);
+            }
+            if (!board.getOwnerUsernames().contains(username)) {
+                return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+            }
+            if (board.getCardLists() == null) {
+                board.setCardLists(new ArrayList<CardList>());
+            }
+            cardList.setParentBoardId(board.getId());
+            board.getCardLists().add(cardList);
+            return new ResponseEntity<>(boardRepository.save(board), HttpStatus.CREATED);
+        }
+        else {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+    }
 
     @ApiOperation(value = "Update a board")
     @RequestMapping(method=RequestMethod.PUT, value="/boards/{id}")
@@ -119,8 +143,6 @@ public class BoardController {
         }
 
     }
-
-
 
     @ApiOperation(value = "Delete a board")
     @RequestMapping(method=RequestMethod.DELETE, value="/boards/{id}")
