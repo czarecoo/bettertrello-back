@@ -13,4 +13,5 @@ public class Card {
     String id;
     @ApiModelProperty(notes = "The name of the Card")
     String name;
+    String parentBoardId;
 }

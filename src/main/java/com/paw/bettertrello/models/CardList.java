@@ -17,6 +17,7 @@ public class CardList {
     String id;
     @ApiModelProperty(notes = "The name of the CardList")
     String name;
+    String parentBoardId;
     @DBRef
     @CascadeSave
     @ApiModelProperty(notes = "List of Cards")
