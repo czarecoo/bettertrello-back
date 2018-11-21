@@ -2,7 +2,6 @@ package com.paw.bettertrello.controllers;
 
 import com.paw.bettertrello.models.Board;
 import com.paw.bettertrello.models.Card;
-import com.paw.bettertrello.models.CardList;
 import com.paw.bettertrello.repositories.BoardRepository;
 import com.paw.bettertrello.repositories.CardRepository;
 import io.swagger.annotations.Api;
@@ -26,7 +25,7 @@ public class CardController {
     @Autowired
     BoardRepository boardRepository;
 
-    @RequestMapping(method=RequestMethod.PATCH, value="/lists/{id}")
+    @RequestMapping(method=RequestMethod.PATCH, value="/cards/{id}")
     public ResponseEntity<?> patchCard(@PathVariable String id, @RequestBody Card patchData, Principal principal) {
 
         String username = principal.getName();
