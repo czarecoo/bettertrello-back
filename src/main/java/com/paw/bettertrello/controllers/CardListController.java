@@ -137,7 +137,7 @@ public class CardListController {
             if (authorizationCheckResult.getStatusCode() != HttpStatus.OK) {
                 return authorizationCheckResult;
             }
-            return new ResponseEntity<>(cardListRepository.save(patchCardList(foundCardList, patchData)), HttpStatus.OK);
+            return new ResponseEntity<>(cardListRepository.save(ControllerUtils.patchObject(foundCardList, patchData)), HttpStatus.OK);
         }
         return null;
     }
@@ -182,21 +182,5 @@ public class CardListController {
         else {
             return new ResponseEntity<>("Parent board not found", HttpStatus.BAD_REQUEST);
         }
-    }
-
-    //Kopyrajt © 2018 by Marcin Kapelan
-    private CardList patchCardList(CardList toPatch, CardList patchData) {
-        for (Field field : patchData.getClass().getDeclaredFields()){
-            field.setAccessible(true);
-            try {
-                if (field.get(patchData) != null) {
-                    System.out.println(field.getName());
-                    field.set(toPatch, field.get(patchData));
-                }
-            } catch (IllegalAccessException e) {
-                e.printStackTrace();
-            }
-        }
-        return toPatch;
     }
 }

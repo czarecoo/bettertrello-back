@@ -49,7 +49,7 @@ public class CardController {
             if (authorizationCheckResult.getStatusCode() != HttpStatus.OK) {
                 return authorizationCheckResult;
             }
-            return new ResponseEntity<>(cardRepository.save(patchCard(foundCard, patchData)), HttpStatus.OK);
+            return new ResponseEntity<>(cardRepository.save(ControllerUtils.patchObject(foundCard, patchData)), HttpStatus.OK);
         }
         return null;
     }
@@ -91,21 +91,5 @@ public class CardController {
         else {
             return new ResponseEntity<>("Parent board not found", HttpStatus.BAD_REQUEST);
         }
-    }
-
-    //Kopyrajt © 2018 by Marcin Kapelan
-    private Card patchCard(Card toPatch, Card patchData) {
-        for (Field field : patchData.getClass().getDeclaredFields()){
-            field.setAccessible(true);
-            try {
-                if (field.get(patchData) != null) {
-                    System.out.println(field.getName());
-                    field.set(toPatch, field.get(patchData));
-                }
-            } catch (IllegalAccessException e) {
-                e.printStackTrace();
-            }
-        }
-        return toPatch;
     }
 }

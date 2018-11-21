@@ -169,7 +169,7 @@ public class BoardController {
             if (!foundBoard.getOwnerUsernames().contains(username)) {
                 return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
             }
-            return new ResponseEntity<>(boardRepository.save(patchBoard(foundBoard, patchData)), HttpStatus.OK);
+            return new ResponseEntity<>(boardRepository.save(ControllerUtils.patchObject(foundBoard, patchData)), HttpStatus.OK);
         }
         return null;
     }
@@ -188,21 +188,5 @@ public class BoardController {
             else return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
         }
         else return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-    }
-
-    //Kopyrajt © 2018 by Marcin Kapelan
-    private Board patchBoard(Board toPatch, Board patchData) {
-        for (Field field : patchData.getClass().getDeclaredFields()){
-            field.setAccessible(true);
-            try {
-                if (field.get(patchData) != null) {
-                    System.out.println(field.getName());
-                    field.set(toPatch, field.get(patchData));
-                }
-            } catch (IllegalAccessException e) {
-                e.printStackTrace();
-            }
-        }
-        return toPatch;
     }
 }
