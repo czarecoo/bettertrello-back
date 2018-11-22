@@ -194,6 +194,15 @@ public class BoardController {
         else return new ResponseEntity<>(HttpStatus.NOT_FOUND);
     }
 
+    public static ActivityData prepareBoardCommentActivity(ActivityData activityData, String cardName) {
+        ActivityData boardActivityData = new ActivityData();
+        boardActivityData.setOwnerUsername(activityData.getOwnerUsername());
+        boardActivityData.setDate(activityData.getDate());
+        boardActivityData.setEditable(false);
+        boardActivityData.setData(" added comment on " + cardName + " \"" + activityData.getData() + "\"");
+        return boardActivityData;
+    }
+
     public void addActivityToBoard(Board board, ActivityData activityData) {
         //TODO: Add enum type to activity describing what kind of activity it is.
         board.getActivities().add(activityData);

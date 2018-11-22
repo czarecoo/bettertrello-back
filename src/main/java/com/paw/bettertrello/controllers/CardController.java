@@ -90,10 +90,12 @@ public class CardController {
                 handlePatchingActivityData(patchData, username);
             }
 
+            foundCard = ControllerUtils.patchObject(foundCard, patchData);
             //Add the last activity to board
-            boardController.addActivityToBoard(authorizationCheckResult.getValue(), foundCard.getActivities().get(foundCard.getActivities().size() - 1));
+            ActivityData activityData = boardController.prepareBoardCommentActivity(foundCard.getActivities().get(foundCard.getActivities().size() - 1), foundCard.getName());
+            boardController.addActivityToBoard(authorizationCheckResult.getValue(), activityData);
 
-            return new ResponseEntity<>(cardRepository.save(ControllerUtils.patchObject(foundCard, patchData)), HttpStatus.OK);
+            return new ResponseEntity<>(cardRepository.save(foundCard), HttpStatus.OK);
         }
         return null;
     }
@@ -124,14 +126,14 @@ public class CardController {
             if (board.getOwnerUsernames().contains(username)) {
                 switch (bodyContent) {
                     case EMPTY:
-                        return new AbstractMap.SimpleEntry<>(new ResponseEntity<>(card, HttpStatus.OK), board);
+                        return new AbstractMap.SimpleEntry<>(new ResponseEntity<>(HttpStatus.OK), board);
                     case CARD:
                         return new AbstractMap.SimpleEntry<>(new ResponseEntity<>(card, HttpStatus.OK), board);
                     default:
                         throw new IllegalArgumentException();
                 }
             }
-            return new AbstractMap.SimpleEntry<>(new ResponseEntity<>("Card does not contain parent board ID", HttpStatus.UNAUTHORIZED), null);
+            return new AbstractMap.SimpleEntry<>(new ResponseEntity<>(HttpStatus.UNAUTHORIZED), null);
         }
         else {
             return new AbstractMap.SimpleEntry<>(new ResponseEntity<>("Parent board not found", HttpStatus.BAD_REQUEST), null);

@@ -15,6 +15,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
+import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Optional;
@@ -38,7 +39,7 @@ public class CardListController {
         Optional<CardList> optionalCardList = cardListRepository.findById(id);
         if (optionalCardList.isPresent()) {
             CardList cardList = optionalCardList.get();
-            return checkAuthorization(username, cardList, OkStatusBodyContent.CARDLIST);
+            return checkAuthorization(username, cardList, OkStatusBodyContent.CARDLIST).getKey();
         }
         else {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
@@ -52,7 +53,7 @@ public class CardListController {
         Optional<CardList> optionalCardList = cardListRepository.findById(id);
         if (optionalCardList.isPresent()) {
             CardList cardList = optionalCardList.get();
-            return checkAuthorization(username, cardList, OkStatusBodyContent.CARDS);
+            return checkAuthorization(username, cardList, OkStatusBodyContent.CARDS).getKey();
         }
         else {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
@@ -66,16 +67,17 @@ public class CardListController {
         Optional<CardList> optionalCardList = cardListRepository.findById(id);
         if (optionalCardList.isPresent()) {
             CardList cardList = optionalCardList.get();
-            ResponseEntity<?> authorizationCheckResult = checkAuthorization(username, cardList, OkStatusBodyContent.EMPTY);
-            if (authorizationCheckResult.getStatusCode() != HttpStatus.OK) {
-                return authorizationCheckResult;
+            AbstractMap.SimpleEntry<ResponseEntity<?>, Board> authorizationCheckResult = checkAuthorization(username, cardList, OkStatusBodyContent.EMPTY);
+            if (authorizationCheckResult.getKey().getStatusCode() != HttpStatus.OK) {
+                return authorizationCheckResult.getKey();
             }
             if (cardList.getCards() == null) {
                 cardList.setCards(new ArrayList<>());
             }
             card.setParentBoardId(cardList.getParentBoardId());
             if (card.getActivities() == null) {
-                setInitialCardActivity(card, cardList, username);
+                ActivityData activityData = setInitialCardActivity(card, cardList, username);
+                boardController.addActivityToBoard(authorizationCheckResult.getValue(), activityData);
             }
             cardList.getCards().add(card);
             return new ResponseEntity<>(cardListRepository.save(cardList), HttpStatus.CREATED);
@@ -103,9 +105,9 @@ public class CardListController {
 
         if (optionalCardList.isPresent()) {
             CardList foundCardList = optionalCardList.get();
-            ResponseEntity<?> authorizationCheckResult = checkAuthorization(username, foundCardList, OkStatusBodyContent.EMPTY);
-            if (authorizationCheckResult.getStatusCode() != HttpStatus.OK) {
-                return authorizationCheckResult;
+            AbstractMap.SimpleEntry<ResponseEntity<?>, Board> authorizationCheckResult = checkAuthorization(username, foundCardList, OkStatusBodyContent.EMPTY);
+            if (authorizationCheckResult.getKey().getStatusCode() != HttpStatus.OK) {
+                return authorizationCheckResult.getKey();
             }
             if (foundCardList.equals(cardList)) {
                 return new ResponseEntity<>(HttpStatus.FOUND);
@@ -139,9 +141,9 @@ public class CardListController {
 
         if (optionalList.isPresent()) {
             CardList foundCardList = optionalList.get();
-            ResponseEntity<?> authorizationCheckResult = checkAuthorization(username, foundCardList, OkStatusBodyContent.EMPTY);
-            if (authorizationCheckResult.getStatusCode() != HttpStatus.OK) {
-                return authorizationCheckResult;
+            AbstractMap.SimpleEntry<ResponseEntity<?>, Board> authorizationCheckResult = checkAuthorization(username, foundCardList, OkStatusBodyContent.EMPTY);
+            if (authorizationCheckResult.getKey().getStatusCode() != HttpStatus.OK) {
+                return authorizationCheckResult.getKey();
             }
             return new ResponseEntity<>(cardListRepository.save(ControllerUtils.patchObject(foundCardList, patchData)), HttpStatus.OK);
         }
@@ -164,9 +166,9 @@ public class CardListController {
         CARDS
     }
 
-    private ResponseEntity<?> checkAuthorization(String username, CardList cardList, OkStatusBodyContent bodyContent) {
+    private AbstractMap.SimpleEntry<ResponseEntity<?>, Board> checkAuthorization(String username, CardList cardList, OkStatusBodyContent bodyContent) {
         if (cardList.getParentBoardId() == null || cardList.getParentBoardId().isEmpty()) {
-            return new ResponseEntity<>("List does not contain parent board ID", HttpStatus.BAD_REQUEST);
+            return new AbstractMap.SimpleEntry<>(new ResponseEntity<>("List does not contain parent board ID", HttpStatus.BAD_REQUEST), null);
         }
         Optional<Board> optionalBoard = boardRepository.findById(cardList.getParentBoardId());
         if (optionalBoard.isPresent()) {
@@ -174,29 +176,29 @@ public class CardListController {
             if (board.getOwnerUsernames().contains(username)) {
                 switch (bodyContent) {
                     case EMPTY:
-                        return new ResponseEntity<>(HttpStatus.OK);
+                        return new AbstractMap.SimpleEntry<>(new ResponseEntity<>(HttpStatus.OK), board);
                     case CARDLIST:
-                        return new ResponseEntity<>(cardList, HttpStatus.OK);
+                        return new AbstractMap.SimpleEntry<>(new ResponseEntity<>(cardList, HttpStatus.OK), board);
                     case CARDS:
-                        return new ResponseEntity<>(cardList.getCards(), HttpStatus.OK);
+                        return new AbstractMap.SimpleEntry<>(new ResponseEntity<>(cardList.getCards(), HttpStatus.OK), board);
                     default:
                         throw new IllegalArgumentException();
                 }
             }
-            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+            return new AbstractMap.SimpleEntry<>(new ResponseEntity<>(HttpStatus.UNAUTHORIZED), null);
         }
         else {
-            return new ResponseEntity<>("Parent board not found", HttpStatus.BAD_REQUEST);
+            return new AbstractMap.SimpleEntry<>(new ResponseEntity<>("Parent board not found", HttpStatus.BAD_REQUEST), null);
         }
     }
 
-    private Card setInitialCardActivity(Card card, CardList cardList, String username) {
+    private ActivityData setInitialCardActivity(Card card, CardList cardList, String username) {
         card.setActivities(new ArrayList<>());
         ActivityData activityData = new ActivityData();
         activityData.setOwnerUsername(username);
         activityData.setData(" added " + card.getName() + " to " + cardList.getName());
         activityData.setDate(ControllerUtils.getCurrentDate());
         card.setActivities(new ArrayList<>(Arrays.asList(activityData)));
-        return card;
+        return activityData;
     }
 }
