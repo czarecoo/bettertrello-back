@@ -1,9 +1,12 @@
 package com.paw.bettertrello.models;
 
+import com.paw.bettertrello.repositories.util.CascadeSave;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
+
+import java.util.List;
 
 @Data
 @Document(collection = "cards")
@@ -13,5 +16,8 @@ public class Card {
     String id;
     @ApiModelProperty(notes = "The name of the Card")
     String name;
+    String description;
+    @CascadeSave
+    List<ActivityData> activities;
     String parentBoardId;
 }

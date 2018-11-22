@@ -17,7 +17,11 @@ public class Board {
     String id;
     @ApiModelProperty(notes = "The name of the Board")
     String name;
+    String color;
     List<String> ownerUsernames;
+    @DBRef
+    @CascadeSave
+    List<ActivityData> activities;
     @DBRef
     @CascadeSave
     @ApiModelProperty(notes = "List of CardLists")

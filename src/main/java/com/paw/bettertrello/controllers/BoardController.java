@@ -1,5 +1,6 @@
 package com.paw.bettertrello.controllers;
 
+import com.paw.bettertrello.models.ActivityData;
 import com.paw.bettertrello.models.Board;
 import com.paw.bettertrello.models.Card;
 import com.paw.bettertrello.models.CardList;
@@ -15,6 +16,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.lang.reflect.Field;
 import java.security.Principal;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -82,6 +84,9 @@ public class BoardController {
         else if (!board.getOwnerUsernames().contains(username)) {
             board.getOwnerUsernames().add(username);
         }
+        if (board.getActivities() == null) {
+            board.setActivities(new ArrayList<>());
+        }
         return new ResponseEntity<>(boardRepository.save(board), HttpStatus.CREATED);
     }
 
@@ -102,6 +107,9 @@ public class BoardController {
                 board.setCardLists(new ArrayList<CardList>());
             }
             cardList.setParentBoardId(board.getId());
+            //Add list creation info to board----------------------------------------
+            addActivityToBoard(board, prepareListCreationActivity(cardList, username));
+            //-----------------------------------------------------------------------
             board.getCardLists().add(cardList);
             return new ResponseEntity<>(boardRepository.save(board), HttpStatus.CREATED);
         }
@@ -112,7 +120,7 @@ public class BoardController {
 
     @ApiOperation(value = "Update a board")
     @RequestMapping(method=RequestMethod.PUT, value="/boards/{id}")
-    public ResponseEntity<?> updateBoard(@PathVariable String id, @RequestBody Board board, Principal principal) {
+    public ResponseEntity<?> putBoard(@PathVariable String id, @RequestBody Board board, Principal principal) {
 
         String username = principal.getName();
 
@@ -126,9 +134,11 @@ public class BoardController {
             if (!board.getId().equals(id)) {
                 return new ResponseEntity<>(HttpStatus.CONFLICT);
             }
+            optionalBoard = boardRepository.findById(board.getId());
         }
-
-        optionalBoard = boardRepository.findById(id);
+        else {
+            optionalBoard = boardRepository.findById(id);
+        }
 
         if (optionalBoard.isPresent()) {
             Board foundBoard = optionalBoard.get();
@@ -142,6 +152,39 @@ public class BoardController {
             return new ResponseEntity<>(boardRepository.save(board), HttpStatus.CREATED);
         }
 
+    }
+
+    @RequestMapping(method=RequestMethod.PATCH, value="/boards/{id}")
+    public ResponseEntity<?> patchBoard(@PathVariable String id, @RequestBody Board patchData, Principal principal) {
+
+        String username = principal.getName();
+
+        Optional<Board> optionalBoard;
+
+        if (!(patchData.getId() == null || patchData.getId().isEmpty())) {
+            if (!patchData.getId().equals(id)) {
+                return new ResponseEntity<>(HttpStatus.CONFLICT);
+            }
+            optionalBoard = boardRepository.findById(patchData.getId());
+        }
+        else {
+            optionalBoard = boardRepository.findById(id);
+        }
+
+        if (optionalBoard.isPresent()) {
+            Board foundBoard = optionalBoard.get();
+            if (!foundBoard.getOwnerUsernames().contains(username)) {
+                return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+            }
+
+            //Add board rename info to board----------------------------------------
+            if (patchData.getName() != null) {
+                addActivityToBoard(foundBoard, prepareBoardRenameActivity(patchData, foundBoard, username));
+            }
+            //---------------------------------------------------------------------
+            return new ResponseEntity<>(boardRepository.save(ControllerUtils.patchObject(foundBoard, patchData)), HttpStatus.OK);
+        }
+        return null;
     }
 
     @ApiOperation(value = "Delete a board")
@@ -160,4 +203,47 @@ public class BoardController {
         else return new ResponseEntity<>(HttpStatus.NOT_FOUND);
     }
 
+    //Methods to generate activities shown solely on board's history. They can base on existing activities like comment activity of a card.
+
+    public static ActivityData prepareCommentCreationActivity(ActivityData activityData, String cardName) {
+        ActivityData boardActivityData = new ActivityData();
+        boardActivityData.setOwnerUsername(activityData.getOwnerUsername());
+        boardActivityData.setDate(activityData.getDate());
+        boardActivityData.setEditable(false);
+        boardActivityData.setData(" added comment on " + cardName + " \"" + activityData.getData() + "\"");
+        return boardActivityData;
+    }
+
+    public static ActivityData prepareListCreationActivity(CardList cardList, String username) {
+        ActivityData boardActivityData = new ActivityData();
+        boardActivityData.setOwnerUsername(username);
+        boardActivityData.setDate(ControllerUtils.getCurrentDate());
+        boardActivityData.setEditable(false);
+        boardActivityData.setData(" added list " + cardList.getName() + " to this board");
+        return boardActivityData;
+    }
+
+    public static ActivityData prepareListRenameActivity(CardList newCardList, CardList oldCardList, String username) {
+        ActivityData boardActivityData = new ActivityData();
+        boardActivityData.setOwnerUsername(username);
+        boardActivityData.setDate(ControllerUtils.getCurrentDate());
+        boardActivityData.setEditable(false);
+        boardActivityData.setData(" renamed list " + oldCardList.getName() + " to " + newCardList.getName());
+        return boardActivityData;
+    }
+
+    public static ActivityData prepareBoardRenameActivity(Board newBoard, Board oldBoard, String username) {
+        ActivityData boardActivityData = new ActivityData();
+        boardActivityData.setOwnerUsername(username);
+        boardActivityData.setDate(ControllerUtils.getCurrentDate());
+        boardActivityData.setEditable(false);
+        boardActivityData.setData(" renamed this board " + oldBoard.getName() + " to " + newBoard.getName());
+        return boardActivityData;
+    }
+
+    public void addActivityToBoard(Board board, ActivityData activityData) {
+        //TODO: Add enum type to activity describing what kind of activity it is.
+        board.getActivities().add(activityData);
+        boardRepository.save(board);
+    }
 }
