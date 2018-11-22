@@ -76,8 +76,13 @@ public class CardListController {
             }
             card.setParentBoardId(cardList.getParentBoardId());
             if (card.getActivities() == null) {
-                ActivityData activityData = setInitialCardActivity(card, cardList, username);
+                ActivityData activityData = prepareCardCreationActivity(card, cardList, username);
+                //Add card creation info to board------------------------------------
                 boardController.addActivityToBoard(authorizationCheckResult.getValue(), activityData);
+                //-------------------------------------------------------------------
+                //Add card creation info to created card
+                card.setActivities(new ArrayList<>(Arrays.asList(activityData)));
+                //-------------------------------------------------------------------
             }
             cardList.getCards().add(card);
             return new ResponseEntity<>(cardListRepository.save(cardList), HttpStatus.CREATED);
@@ -145,6 +150,13 @@ public class CardListController {
             if (authorizationCheckResult.getKey().getStatusCode() != HttpStatus.OK) {
                 return authorizationCheckResult.getKey();
             }
+
+            //Add list rename info to board----------------------------------------
+            if (patchData.getName() != null) {
+                boardController.addActivityToBoard(authorizationCheckResult.getValue(), BoardController.prepareListRenameActivity(patchData, foundCardList, username));
+            }
+            //---------------------------------------------------------------------
+
             return new ResponseEntity<>(cardListRepository.save(ControllerUtils.patchObject(foundCardList, patchData)), HttpStatus.OK);
         }
         return null;
@@ -166,6 +178,7 @@ public class CardListController {
         CARDS
     }
 
+    //Returns pair of ResponseEntity (key) and parent board of object (value)
     private AbstractMap.SimpleEntry<ResponseEntity<?>, Board> checkAuthorization(String username, CardList cardList, OkStatusBodyContent bodyContent) {
         if (cardList.getParentBoardId() == null || cardList.getParentBoardId().isEmpty()) {
             return new AbstractMap.SimpleEntry<>(new ResponseEntity<>("List does not contain parent board ID", HttpStatus.BAD_REQUEST), null);
@@ -192,13 +205,11 @@ public class CardListController {
         }
     }
 
-    private ActivityData setInitialCardActivity(Card card, CardList cardList, String username) {
-        card.setActivities(new ArrayList<>());
+    public static ActivityData prepareCardCreationActivity(Card card, CardList cardList, String username) {
         ActivityData activityData = new ActivityData();
         activityData.setOwnerUsername(username);
-        activityData.setData(" added " + card.getName() + " to " + cardList.getName());
+        activityData.setData(" added card " + card.getName() + " to " + cardList.getName());
         activityData.setDate(ControllerUtils.getCurrentDate());
-        card.setActivities(new ArrayList<>(Arrays.asList(activityData)));
         return activityData;
     }
 }

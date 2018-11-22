@@ -107,6 +107,9 @@ public class BoardController {
                 board.setCardLists(new ArrayList<CardList>());
             }
             cardList.setParentBoardId(board.getId());
+            //Add list creation info to board----------------------------------------
+            addActivityToBoard(board, prepareListCreationActivity(cardList, username));
+            //-----------------------------------------------------------------------
             board.getCardLists().add(cardList);
             return new ResponseEntity<>(boardRepository.save(board), HttpStatus.CREATED);
         }
@@ -173,6 +176,12 @@ public class BoardController {
             if (!foundBoard.getOwnerUsernames().contains(username)) {
                 return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
             }
+
+            //Add board rename info to board----------------------------------------
+            if (patchData.getName() != null) {
+                addActivityToBoard(foundBoard, prepareBoardRenameActivity(patchData, foundBoard, username));
+            }
+            //---------------------------------------------------------------------
             return new ResponseEntity<>(boardRepository.save(ControllerUtils.patchObject(foundBoard, patchData)), HttpStatus.OK);
         }
         return null;
@@ -194,12 +203,41 @@ public class BoardController {
         else return new ResponseEntity<>(HttpStatus.NOT_FOUND);
     }
 
-    public static ActivityData prepareBoardCommentActivity(ActivityData activityData, String cardName) {
+    //Methods to generate activities shown solely on board's history. They can base on existing activities like comment activity of a card.
+
+    public static ActivityData prepareCommentCreationActivity(ActivityData activityData, String cardName) {
         ActivityData boardActivityData = new ActivityData();
         boardActivityData.setOwnerUsername(activityData.getOwnerUsername());
         boardActivityData.setDate(activityData.getDate());
         boardActivityData.setEditable(false);
         boardActivityData.setData(" added comment on " + cardName + " \"" + activityData.getData() + "\"");
+        return boardActivityData;
+    }
+
+    public static ActivityData prepareListCreationActivity(CardList cardList, String username) {
+        ActivityData boardActivityData = new ActivityData();
+        boardActivityData.setOwnerUsername(username);
+        boardActivityData.setDate(ControllerUtils.getCurrentDate());
+        boardActivityData.setEditable(false);
+        boardActivityData.setData(" added list " + cardList.getName() + " to this board");
+        return boardActivityData;
+    }
+
+    public static ActivityData prepareListRenameActivity(CardList newCardList, CardList oldCardList, String username) {
+        ActivityData boardActivityData = new ActivityData();
+        boardActivityData.setOwnerUsername(username);
+        boardActivityData.setDate(ControllerUtils.getCurrentDate());
+        boardActivityData.setEditable(false);
+        boardActivityData.setData(" renamed list " + oldCardList.getName() + " to " + newCardList.getName());
+        return boardActivityData;
+    }
+
+    public static ActivityData prepareBoardRenameActivity(Board newBoard, Board oldBoard, String username) {
+        ActivityData boardActivityData = new ActivityData();
+        boardActivityData.setOwnerUsername(username);
+        boardActivityData.setDate(ControllerUtils.getCurrentDate());
+        boardActivityData.setEditable(false);
+        boardActivityData.setData(" renamed this board " + oldBoard.getName() + " to " + newBoard.getName());
         return boardActivityData;
     }
 

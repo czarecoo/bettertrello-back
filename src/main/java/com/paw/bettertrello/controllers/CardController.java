@@ -13,10 +13,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.AbstractMap;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -91,9 +88,11 @@ public class CardController {
             }
 
             foundCard = ControllerUtils.patchObject(foundCard, patchData);
-            //Add the last activity to board
-            ActivityData activityData = boardController.prepareBoardCommentActivity(foundCard.getActivities().get(foundCard.getActivities().size() - 1), foundCard.getName());
+
+            //Add the last activity to board-----------------------------------------
+            ActivityData activityData = BoardController.prepareCommentCreationActivity(foundCard.getActivities().get(foundCard.getActivities().size() - 1), foundCard.getName());
             boardController.addActivityToBoard(authorizationCheckResult.getValue(), activityData);
+            //-----------------------------------------------------------------------
 
             return new ResponseEntity<>(cardRepository.save(foundCard), HttpStatus.OK);
         }
@@ -115,7 +114,7 @@ public class CardController {
         CARD
     }
 
-    //Returns pair of ResponseEntitiy and parent board of object
+    //Returns pair of ResponseEntity (key) and parent board of object (value)
     private AbstractMap.SimpleEntry<ResponseEntity<?>, Board> checkAuthorization(String username, Card card, CardController.OkStatusBodyContent bodyContent) {
         if (card.getParentBoardId() == null || card.getParentBoardId().isEmpty()) {
             return new AbstractMap.SimpleEntry<>(new ResponseEntity<>("Card does not contain parent board ID", HttpStatus.BAD_REQUEST), null);
@@ -147,13 +146,12 @@ public class CardController {
             lastActivity.setOwnerUsername(username);
         }
         if (lastActivity.getDate() == null || lastActivity.getDate().isEmpty()) {
-            DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss");
-            LocalDateTime now = LocalDateTime.now();
             lastActivity.setDate(ControllerUtils.getCurrentDate());
         }
         if (lastActivity.getData() == null) {
             lastActivity.setData("");
         }
+        lastActivity.setEditable(true);
         return patchData;
     }
 }
