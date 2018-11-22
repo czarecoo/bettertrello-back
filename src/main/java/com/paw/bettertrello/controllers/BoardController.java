@@ -191,7 +191,9 @@ public class BoardController {
         else return new ResponseEntity<>(HttpStatus.NOT_FOUND);
     }
 
-    public static void AddActivityToBoard(Board board, ActivityData activityData) {
-
+    public void addActivityToBoard(Board board, ActivityData activityData) {
+        //TODO: Add enum type to activity describing what kind of activity it is.
+        board.getActivities().add(activityData);
+        boardRepository.save(board);
     }
 }

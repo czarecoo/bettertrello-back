@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.*;
 import java.security.Principal;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -28,6 +29,8 @@ public class CardController {
     CardRepository cardRepository;
     @Autowired
     BoardRepository boardRepository;
+    @Autowired
+    BoardController boardController;
 
     //TODO
     /*
@@ -77,15 +80,18 @@ public class CardController {
 
         if (optionalCard.isPresent()) {
             Card foundCard = optionalCard.get();
-            ResponseEntity<?> authorizationCheckResult = checkAuthorization(username, foundCard, CardController.OkStatusBodyContent.EMPTY);
-            if (authorizationCheckResult.getStatusCode() != HttpStatus.OK) {
-                return authorizationCheckResult;
+            AbstractMap.SimpleEntry<ResponseEntity<?>, Board> authorizationCheckResult = checkAuthorization(username, foundCard, CardController.OkStatusBodyContent.EMPTY);
+            if (authorizationCheckResult.getKey().getStatusCode() != HttpStatus.OK) {
+                return authorizationCheckResult.getKey();
             }
 
             //Handle list of ActivityData from patchData (add date and user to the last element that we suppose it was appended)
             if (patchData.getActivities() != null) {
                 handlePatchingActivityData(patchData, username);
             }
+
+            //Add the last activity to board
+            boardController.addActivityToBoard(authorizationCheckResult.getValue(), foundCard.getActivities().get(foundCard.getActivities().size() - 1));
 
             return new ResponseEntity<>(cardRepository.save(ControllerUtils.patchObject(foundCard, patchData)), HttpStatus.OK);
         }
@@ -107,9 +113,10 @@ public class CardController {
         CARD
     }
 
-    private ResponseEntity<?> checkAuthorization(String username, Card card, CardController.OkStatusBodyContent bodyContent) {
+    //Returns pair of ResponseEntitiy and parent board of object
+    private AbstractMap.SimpleEntry<ResponseEntity<?>, Board> checkAuthorization(String username, Card card, CardController.OkStatusBodyContent bodyContent) {
         if (card.getParentBoardId() == null || card.getParentBoardId().isEmpty()) {
-            return new ResponseEntity<>("Card does not contain parent board ID", HttpStatus.BAD_REQUEST);
+            return new AbstractMap.SimpleEntry<>(new ResponseEntity<>("Card does not contain parent board ID", HttpStatus.BAD_REQUEST), null);
         }
         Optional<Board> optionalBoard = boardRepository.findById(card.getParentBoardId());
         if (optionalBoard.isPresent()) {
@@ -117,17 +124,17 @@ public class CardController {
             if (board.getOwnerUsernames().contains(username)) {
                 switch (bodyContent) {
                     case EMPTY:
-                        return new ResponseEntity<>(HttpStatus.OK);
+                        return new AbstractMap.SimpleEntry<>(new ResponseEntity<>("Card does not contain parent board ID", HttpStatus.BAD_REQUEST), null);
                     case CARD:
-                        return new ResponseEntity<>(card, HttpStatus.OK);
+                        return new AbstractMap.SimpleEntry<>(new ResponseEntity<>(card, HttpStatus.OK), null);
                     default:
                         throw new IllegalArgumentException();
                 }
             }
-            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+            return new AbstractMap.SimpleEntry<>(new ResponseEntity<>("Card does not contain parent board ID", HttpStatus.UNAUTHORIZED), null);
         }
         else {
-            return new ResponseEntity<>("Parent board not found", HttpStatus.BAD_REQUEST);
+            return new AbstractMap.SimpleEntry<>(new ResponseEntity<>("Parent board not found", HttpStatus.BAD_REQUEST), null);
         }
     }
 
