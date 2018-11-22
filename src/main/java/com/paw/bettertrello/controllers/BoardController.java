@@ -1,5 +1,6 @@
 package com.paw.bettertrello.controllers;
 
+import com.paw.bettertrello.models.ActivityData;
 import com.paw.bettertrello.models.Board;
 import com.paw.bettertrello.models.Card;
 import com.paw.bettertrello.models.CardList;
@@ -188,5 +189,9 @@ public class BoardController {
             else return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
         }
         else return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+    }
+
+    public static void AddActivityToBoard(Board board, ActivityData activityData) {
+
     }
 }

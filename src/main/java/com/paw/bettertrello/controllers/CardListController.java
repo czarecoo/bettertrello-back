@@ -1,6 +1,7 @@
 package com.paw.bettertrello.controllers;
 
 
+import com.paw.bettertrello.models.ActivityData;
 import com.paw.bettertrello.models.Board;
 import com.paw.bettertrello.models.Card;
 import com.paw.bettertrello.models.CardList;
@@ -13,9 +14,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.lang.reflect.Field;
 import java.security.Principal;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Optional;
 
 @RestController
@@ -72,7 +73,7 @@ public class CardListController {
             }
             card.setParentBoardId(cardList.getParentBoardId());
             if (card.getActivities() == null) {
-                card.setActivities(new ArrayList<>());
+                setInitialCardActivity(card, cardList, username);
             }
             cardList.getCards().add(card);
             return new ResponseEntity<>(cardListRepository.save(cardList), HttpStatus.CREATED);
@@ -185,5 +186,14 @@ public class CardListController {
         else {
             return new ResponseEntity<>("Parent board not found", HttpStatus.BAD_REQUEST);
         }
+    }
+
+    private Card setInitialCardActivity(Card card, CardList cardList, String username) {
+        card.setActivities(new ArrayList<>());
+        ActivityData activityData = new ActivityData();
+        activityData.setOwnerUsername(username);
+        activityData.setData(username + " added " + card.getName() + " to " + cardList.getName());
+        card.setActivities(new ArrayList<>(Arrays.asList(activityData)));
+        return card;
     }
 }

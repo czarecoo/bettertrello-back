@@ -1,5 +1,6 @@
 package com.paw.bettertrello.models;
 
+import com.paw.bettertrello.repositories.util.CascadeSave;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import org.springframework.data.annotation.Id;
@@ -16,6 +17,7 @@ public class Card {
     @ApiModelProperty(notes = "The name of the Card")
     String name;
     String description;
+    @CascadeSave
     List<ActivityData> activities;
     String parentBoardId;
 }

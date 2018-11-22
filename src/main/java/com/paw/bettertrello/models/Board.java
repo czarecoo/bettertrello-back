@@ -21,6 +21,9 @@ public class Board {
     List<String> ownerUsernames;
     @DBRef
     @CascadeSave
+    List<ActivityData> activities;
+    @DBRef
+    @CascadeSave
     @ApiModelProperty(notes = "List of CardLists")
     List<CardList> cardLists;
 }
