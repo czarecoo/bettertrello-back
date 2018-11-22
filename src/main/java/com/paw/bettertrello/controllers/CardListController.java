@@ -159,7 +159,9 @@ public class CardListController {
 
             return new ResponseEntity<>(cardListRepository.save(ControllerUtils.patchObject(foundCardList, patchData)), HttpStatus.OK);
         }
-        return null;
+        else {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
     }
 
     @ApiOperation(value = "Delete a list")
