@@ -184,7 +184,9 @@ public class BoardController {
             //---------------------------------------------------------------------
             return new ResponseEntity<>(boardRepository.save(ControllerUtils.patchObject(foundBoard, patchData)), HttpStatus.OK);
         }
-        return null;
+        else {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
     }
 
     @ApiOperation(value = "Delete a board")

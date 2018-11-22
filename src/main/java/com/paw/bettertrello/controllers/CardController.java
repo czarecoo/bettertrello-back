@@ -96,7 +96,9 @@ public class CardController {
 
             return new ResponseEntity<>(cardRepository.save(foundCard), HttpStatus.OK);
         }
-        return null;
+        else {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
     }
 
     @ApiOperation(value = "Delete a card")
