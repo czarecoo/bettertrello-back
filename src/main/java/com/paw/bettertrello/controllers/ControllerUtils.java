@@ -1,6 +1,8 @@
 package com.paw.bettertrello.controllers;
 
 import java.lang.reflect.Field;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 
 public class ControllerUtils {
 
@@ -21,5 +23,11 @@ public class ControllerUtils {
             }
         }
         return toPatch;
+    }
+
+    public static String getCurrentDate() {
+        DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss");
+        LocalDateTime now = LocalDateTime.now();
+        return dateTimeFormatter.format(now);
     }
 }

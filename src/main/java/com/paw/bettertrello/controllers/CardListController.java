@@ -28,6 +28,8 @@ public class CardListController {
     CardListRepository cardListRepository;
     @Autowired
     BoardRepository boardRepository;
+    @Autowired
+    BoardController boardController;
 
     @ApiOperation(value = "Search a List with an ID",response = Optional.class)
     @RequestMapping(method=RequestMethod.GET, value="/lists/{id}")
@@ -192,7 +194,8 @@ public class CardListController {
         card.setActivities(new ArrayList<>());
         ActivityData activityData = new ActivityData();
         activityData.setOwnerUsername(username);
-        activityData.setData(username + " added " + card.getName() + " to " + cardList.getName());
+        activityData.setData(" added " + card.getName() + " to " + cardList.getName());
+        activityData.setDate(ControllerUtils.getCurrentDate());
         card.setActivities(new ArrayList<>(Arrays.asList(activityData)));
         return card;
     }

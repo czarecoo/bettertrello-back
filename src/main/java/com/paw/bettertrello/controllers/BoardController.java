@@ -84,6 +84,9 @@ public class BoardController {
         else if (!board.getOwnerUsernames().contains(username)) {
             board.getOwnerUsernames().add(username);
         }
+        if (board.getActivities() == null) {
+            board.setActivities(new ArrayList<>());
+        }
         return new ResponseEntity<>(boardRepository.save(board), HttpStatus.CREATED);
     }
 

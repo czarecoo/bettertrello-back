@@ -124,9 +124,9 @@ public class CardController {
             if (board.getOwnerUsernames().contains(username)) {
                 switch (bodyContent) {
                     case EMPTY:
-                        return new AbstractMap.SimpleEntry<>(new ResponseEntity<>("Card does not contain parent board ID", HttpStatus.BAD_REQUEST), null);
+                        return new AbstractMap.SimpleEntry<>(new ResponseEntity<>(card, HttpStatus.OK), board);
                     case CARD:
-                        return new AbstractMap.SimpleEntry<>(new ResponseEntity<>(card, HttpStatus.OK), null);
+                        return new AbstractMap.SimpleEntry<>(new ResponseEntity<>(card, HttpStatus.OK), board);
                     default:
                         throw new IllegalArgumentException();
                 }
@@ -147,7 +147,7 @@ public class CardController {
         if (lastActivity.getDate() == null || lastActivity.getDate().isEmpty()) {
             DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss");
             LocalDateTime now = LocalDateTime.now();
-            lastActivity.setDate(dateTimeFormatter.format(now));
+            lastActivity.setDate(ControllerUtils.getCurrentDate());
         }
         if (lastActivity.getData() == null) {
             lastActivity.setData("");
