@@ -20,6 +20,7 @@ import java.lang.reflect.Field;
 import java.security.Principal;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Optional;
 
 
@@ -39,7 +40,13 @@ public class BoardController {
     @ApiOperation(value = "Search all boards",response = Optional.class)
     @RequestMapping(method=RequestMethod.GET, value="/boards")
     public ResponseEntity<?> getBoards(Principal principal) {
-        return new ResponseEntity<>(boardRepository.findAllByOwnerUsernamesContaining(principal.getName()), HttpStatus.OK);
+        List<Board> boardListOnServer = boardRepository.findAllByOwnerUsernamesContaining(principal.getName());
+        List<Board> boardListToShow = new ArrayList<>();
+        for(Board board: boardListOnServer) {
+            if(!board.isArchived())
+                boardListToShow.add(board);
+        }
+        return new ResponseEntity<>(boardListToShow, HttpStatus.OK);
     }
 
     @ApiOperation(value = "Search a board with an ID",response = Optional.class)
