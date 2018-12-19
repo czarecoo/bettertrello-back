@@ -10,6 +10,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
 import java.util.Optional;
 
 @RestController
@@ -39,7 +40,21 @@ public class UserController {
         }
         else {
             user.setPassword(passwordEncoder.encode(user.getPassword()));
+            if(user.getNotifications() == null){
+                user.setNotifications(new ArrayList<>());
+            }
             return new ResponseEntity<>(userRepository.save(user), HttpStatus.CREATED);
         }
     }
+
+   /* @RequestMapping(method= RequestMethod.DELETE, value="/users/notifications")
+    public ResponseEntity<?> deleteUserNotifications(@RequestBody User user) {
+        Optional<User> optionalUser = userRepository.findByUsername(user.getUsername());
+        if(optionalUser.isPresent()){
+
+        }
+        else{
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+    }*/
 }

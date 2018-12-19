@@ -4,6 +4,7 @@ import com.paw.bettertrello.models.*;
 import com.paw.bettertrello.repositories.BoardRepository;
 import com.paw.bettertrello.repositories.CardListRepository;
 import com.paw.bettertrello.repositories.CardRepository;
+import com.paw.bettertrello.repositories.UserRepository;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,6 +30,8 @@ public class CardController {
     BoardRepository boardRepository;
     @Autowired
     BoardController boardController;
+    @Autowired
+    UserRepository userRepository;
 
 
     @ApiOperation(value = "Add an checklist item to card",response = Board.class)
@@ -111,9 +114,64 @@ public class CardController {
             activityData.setParentBoardId(card.getParentBoardId());
             activityData.setParentCardId(card.getId());
             card.getActivities().add(activityData);
+
+            for(Iterator<String> iterator = card.getObserverUserNames().iterator();iterator.hasNext();){
+                Optional<User> optionalUser = userRepository.findByUsername(iterator.next());
+                if (optionalUser.isPresent()) {
+                    User user = optionalUser.get();
+                    activityData.setId(null);
+                    user.getNotifications().add(activityData);
+                }
+                else{
+                    iterator.remove();
+                }
+            }
+
             return new ResponseEntity<>(cardRepository.save(card), HttpStatus.CREATED);
         }
         else {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+    }
+
+    @RequestMapping(method=RequestMethod.POST, value="/cards/{id}/observe")
+    public ResponseEntity<?> observeCard(@PathVariable String id, Principal principal) {
+        String username = principal.getName();
+        Optional<Card> optionalCard = cardRepository.findById(id);
+        if (optionalCard.isPresent()) {
+            Card card = optionalCard.get();
+            AbstractMap.SimpleEntry<ResponseEntity<?>, Board> authorizationCheckResult = checkAuthorization(username, card, OkStatusBodyContent.EMPTY);
+            if (authorizationCheckResult.getKey().getStatusCode() != HttpStatus.OK) {
+                return authorizationCheckResult.getKey();
+            }
+            if(card.getObserverUserNames() == null){
+                card.setObserverUserNames(new ArrayList<>());
+            }
+            card.getObserverUserNames().add(username);
+            return new ResponseEntity<>(cardRepository.save(card), HttpStatus.OK);
+        }
+        else{
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+    }
+
+    @RequestMapping(method=RequestMethod.POST, value="/cards/{id}/unobserve")
+    public ResponseEntity<?> unObserveCard(@PathVariable String id, Principal principal) {
+        String username = principal.getName();
+        Optional<Card> optionalCard = cardRepository.findById(id);
+        if (optionalCard.isPresent()) {
+            Card card = optionalCard.get();
+            AbstractMap.SimpleEntry<ResponseEntity<?>, Board> authorizationCheckResult = checkAuthorization(username, card, OkStatusBodyContent.EMPTY);
+            if (authorizationCheckResult.getKey().getStatusCode() != HttpStatus.OK) {
+                return authorizationCheckResult.getKey();
+            }
+            if(card.getObserverUserNames() == null){
+                return new ResponseEntity<>("Can not unobserve an unobserved card", HttpStatus.BAD_REQUEST);
+            }
+            card.getObserverUserNames().remove(username);
+            return new ResponseEntity<>(cardRepository.save(card), HttpStatus.OK);
+        }
+        else{
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
     }

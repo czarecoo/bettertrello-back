@@ -82,6 +82,9 @@ public class CardListController {
                 card.setActivities(new ArrayList<>(Arrays.asList(activityData)));
                 //-------------------------------------------------------------------
             }
+            if(card.getObserverUserNames() == null){
+                card.setObserverUserNames(new ArrayList<>());
+            }
             cardList.getCards().add(card);
             return new ResponseEntity<>(cardListRepository.save(cardList), HttpStatus.CREATED);
         }
