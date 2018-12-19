@@ -119,6 +119,9 @@ public class CardController {
                 Optional<User> optionalUser = userRepository.findByUsername(iterator.next());
                 if (optionalUser.isPresent()) {
                     User user = optionalUser.get();
+                    if(user.getUsername().equals(card.getOwnerUsername())){
+                        continue;
+                    }
                     activityData.setId(null);
                     user.getNotifications().add(activityData);
                 }

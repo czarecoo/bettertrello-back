@@ -85,6 +85,9 @@ public class CardListController {
             if(card.getObserverUserNames() == null){
                 card.setObserverUserNames(new ArrayList<>());
             }
+            if(card.getOwnerUsername() == null){
+                card.setOwnerUsername(username);
+            }
             cardList.getCards().add(card);
             return new ResponseEntity<>(cardListRepository.save(cardList), HttpStatus.CREATED);
         }
