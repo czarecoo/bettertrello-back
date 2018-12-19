@@ -83,7 +83,7 @@ public class CardListController {
                 //-------------------------------------------------------------------
             }
             if(card.getObserverUserNames() == null){
-                card.setObserverUserNames(new ArrayList<>());
+                card.setObserverUserNames(new HashSet<>());
             }
             if(card.getOwnerUsername() == null){
                 card.setOwnerUsername(username);

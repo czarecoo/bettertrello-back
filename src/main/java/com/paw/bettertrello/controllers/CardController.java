@@ -148,7 +148,7 @@ public class CardController {
                 return authorizationCheckResult.getKey();
             }
             if(card.getObserverUserNames() == null){
-                card.setObserverUserNames(new ArrayList<>());
+                card.setObserverUserNames(new HashSet<>());
             }
             card.getObserverUserNames().add(username);
             return new ResponseEntity<>(cardRepository.save(card), HttpStatus.OK);

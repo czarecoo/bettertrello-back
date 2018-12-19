@@ -9,6 +9,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Set;
 
 @Data
 @Document(collection = "cards")
@@ -22,7 +23,7 @@ public class Card {
     String description;
     boolean isArchived;
     String cardDeadlineDate;
-    List<String> observerUserNames;
+    Set<String> observerUserNames;
     @DBRef
     @CascadeSave
     List<ActivityData> activities;
