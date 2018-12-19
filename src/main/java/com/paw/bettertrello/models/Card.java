@@ -24,5 +24,8 @@ public class Card {
     @DBRef
     @CascadeSave
     List<ActivityData> activities;
+    @DBRef
+    @CascadeSave
+    List<CheckListItem> checkListItems;
     String parentBoardId;
 }

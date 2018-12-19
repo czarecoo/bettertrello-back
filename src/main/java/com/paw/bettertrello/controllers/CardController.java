@@ -3,6 +3,7 @@ package com.paw.bettertrello.controllers;
 import com.paw.bettertrello.models.ActivityData;
 import com.paw.bettertrello.models.Board;
 import com.paw.bettertrello.models.Card;
+import com.paw.bettertrello.models.CheckListItem;
 import com.paw.bettertrello.repositories.BoardRepository;
 import com.paw.bettertrello.repositories.CardRepository;
 import io.swagger.annotations.Api;
@@ -13,10 +14,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
-import java.util.AbstractMap;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 @RestController
 @Api(description="Operations pertaining to cards in application")
@@ -30,7 +28,39 @@ public class CardController {
     @Autowired
     BoardController boardController;
 
-    /* TODO.. or not todo
+
+    @ApiOperation(value = "Add an checklist item to card",response = Board.class)
+    @RequestMapping(method= RequestMethod.POST, value="/cards/{id}/checklist")
+    public ResponseEntity<?> postCheckListItemToCard(@RequestBody CheckListItem checkListItem, @PathVariable String id, Principal principal) {
+        String username = principal.getName();
+        Optional<Card> optionalCard = cardRepository.findById(id);
+        if (optionalCard.isPresent()) {
+            Card card = optionalCard.get();
+            AbstractMap.SimpleEntry<ResponseEntity<?>, Board> authorizationCheckResult = checkAuthorization(username, card, OkStatusBodyContent.EMPTY);
+            if (authorizationCheckResult.getKey().getStatusCode() != HttpStatus.OK) {
+                return authorizationCheckResult.getKey();
+            }
+            if (card.getCheckListItems() == null) {
+                card.setCheckListItems(new ArrayList<>());
+            }
+            checkListItem.setParentBoardId(card.getParentBoardId());
+            card.getCheckListItems().add(checkListItem);
+
+            ActivityData activityData = prepareCheckListCreationActivity(card, checkListItem, username);
+            //Add card creation info to board------------------------------------
+            boardController.addActivityToBoard(authorizationCheckResult.getValue(), activityData);
+            //-------------------------------------------------------------------
+            //Add card creation info to created card
+            card.getActivities().add(activityData);
+            //-------------------------------------------------------------------
+
+            return new ResponseEntity<>(cardRepository.save(card), HttpStatus.CREATED);
+        }
+        else {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+    }
+
     @ApiOperation(value = "Add an activity to card",response = Board.class)
     @RequestMapping(method= RequestMethod.POST, value="/cards/{id}/activities")
     public ResponseEntity<?> postActivityToCard(@RequestBody ActivityData activityData, @PathVariable String id, Principal principal) {
@@ -46,9 +76,6 @@ public class CardController {
                 card.setActivities(new ArrayList<>());
             }
             activityData.setParentBoardId(card.getParentBoardId());
-            if (card.getActivities() == null) {
-                card.setActivities(new ArrayList<>());
-            }
             card.getActivities().add(activityData);
             return new ResponseEntity<>(cardRepository.save(card), HttpStatus.CREATED);
         }
@@ -56,7 +83,6 @@ public class CardController {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
     }
-    */
 
     @RequestMapping(method=RequestMethod.PATCH, value="/cards/{id}")
     public ResponseEntity<?> patchCard(@PathVariable String id, @RequestBody Card patchData, Principal principal) {
@@ -100,19 +126,6 @@ public class CardController {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
     }
-
-    /*
-    ///// UNUSED /////
-    @ApiOperation(value = "Delete a card")
-    @RequestMapping(method=RequestMethod.DELETE, value="/cards/{id}")
-    public String deleteCard(@PathVariable String id) {
-        Optional<Card> optionalCard = cardRepository.findById(id);
-        Card card = optionalCard.get();
-        cardRepository.delete(card);
-
-        return "";
-    }
-    */
 
     private enum OkStatusBodyContent {
         EMPTY,
@@ -158,5 +171,13 @@ public class CardController {
         }
         lastActivity.setEditable(true);
         return patchData;
+    }
+
+    public static ActivityData prepareCheckListCreationActivity(Card card, CheckListItem checkListItem, String username) {
+        ActivityData activityData = new ActivityData();
+        activityData.setOwnerUsername(username);
+        activityData.setData(" added checklist item " + checkListItem.getData() + " to " + card.getName());
+        activityData.setDate(ControllerUtils.getCurrentDate());
+        return activityData;
     }
 }
