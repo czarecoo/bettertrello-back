@@ -79,7 +79,8 @@ public class CheckListItemController {
             }
             else {
                 Card card = parentCard.get();
-                card.getCheckListItems().remove(foundCheckListItem);
+                card.getCheckListItems().removeIf(a -> a.getId().equals(foundCheckListItem.getId()));
+                cardRepository.save(card);
             }
 
             checkListItemRepository.delete(foundCheckListItem);
