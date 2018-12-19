@@ -81,8 +81,12 @@ public class CardController {
             }
             card.setParentBoardId(cardListToPaste.getParentBoardId());
             card.setId(null);
-            cardListToPaste.getCards().add(copyCardDestination.listPosition,card);
-            return new ResponseEntity<>(cardListRepository.save(cardListToPaste), HttpStatus.CREATED);
+            if(copyCardDestination.listPosition<0 || copyCardDestination.listPosition>cardListToPaste.getCards().size())
+                return new ResponseEntity<>("Selected list position is out of bounds of selected list", HttpStatus.BAD_REQUEST);
+            else{
+                cardListToPaste.getCards().add(copyCardDestination.listPosition,card);
+                return new ResponseEntity<>(cardListRepository.save(cardListToPaste), HttpStatus.CREATED);
+            }
         }
         else {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
