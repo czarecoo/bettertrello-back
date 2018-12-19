@@ -40,13 +40,8 @@ public class BoardController {
     @ApiOperation(value = "Search all boards",response = Optional.class)
     @RequestMapping(method=RequestMethod.GET, value="/boards")
     public ResponseEntity<?> getBoards(Principal principal) {
-        List<Board> boardListOnServer = boardRepository.findAllByOwnerUsernamesContaining(principal.getName());
-        List<Board> boardListToShow = new ArrayList<>();
-        for(Board board: boardListOnServer) {
-            if(!board.isArchived())
-                boardListToShow.add(board);
-        }
-        return new ResponseEntity<>(boardListToShow, HttpStatus.OK);
+        List<Board> boardList = boardRepository.findAllByOwnerUsernamesContaining(principal.getName());
+        return new ResponseEntity<>(boardList.removeIf(Board::isArchived), HttpStatus.OK);
     }
 
     @ApiOperation(value = "Search a board with an ID",response = Optional.class)
@@ -57,6 +52,9 @@ public class BoardController {
         if (optionalBoard.isPresent()) {
             Board board = optionalBoard.get();
             if (board.getOwnerUsernames().contains(username)) {
+                for(CardList cardList: board.getCardLists()){
+                    cardList.getCards().removeIf(Card::isArchived);
+                }
                 return new ResponseEntity<>(board, HttpStatus.OK);
             }
             else return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);

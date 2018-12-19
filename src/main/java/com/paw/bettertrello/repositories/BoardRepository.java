@@ -14,6 +14,6 @@ public interface BoardRepository extends MongoRepository<Board, String> {
     @Override
     List<Board> findAll();
 
-    @Query(value = "{'ownerUsernames' : ?0}", fields = "{ 'cardLists' : 0 }")
+    @Query(value = "{'ownerUsernames' : ?0}", fields = "{ 'cardLists' : 0 , 'activities' : 0}")
     List<Board> findAllByOwnerUsernamesContaining(String username);
 }
