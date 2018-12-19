@@ -1,5 +1,6 @@
 package com.paw.bettertrello.controllers;
 
+import com.paw.bettertrello.models.ActivityData;
 import com.paw.bettertrello.models.Board;
 import com.paw.bettertrello.models.Card;
 import com.paw.bettertrello.models.CardList;
@@ -13,6 +14,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
+import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Optional;
 
@@ -22,10 +24,86 @@ import java.util.Optional;
 public class CardActivityDataController {
 
     @Autowired
-    CardActivityDataRepository cardRepository;
+    CardActivityDataRepository cardActivityDataRepository;
     @Autowired
     BoardRepository boardRepository;
 
+    @RequestMapping(method=RequestMethod.PATCH, value="/activities/{id}")
+    public ResponseEntity<?> patchActivity(@PathVariable String id, @RequestBody ActivityData patchData, Principal principal) {
+        String username = principal.getName();
 
+        Optional<ActivityData> optionalActivityData;
+
+        if (!(patchData.getId() == null || patchData.getId().isEmpty())) {
+            if (!patchData.getId().equals(id)) {
+                return new ResponseEntity<>(HttpStatus.CONFLICT);
+            }
+            optionalActivityData = cardActivityDataRepository.findById(patchData.getId());
+        }
+        else {
+            optionalActivityData = cardActivityDataRepository.findById(id);
+        }
+
+        if (optionalActivityData.isPresent()) {
+            ActivityData foundActivityData = optionalActivityData.get();
+            AbstractMap.SimpleEntry<ResponseEntity<?>, Board> authorizationCheckResult = checkAuthorization(username, foundActivityData);
+            if (authorizationCheckResult.getKey().getStatusCode() != HttpStatus.OK) {
+                return authorizationCheckResult.getKey();
+            }
+
+            //Check if an activity can be editable
+            if (!foundActivityData.isEditable()) {
+                return new ResponseEntity<>(HttpStatus.LOCKED);
+            }
+
+            foundActivityData = ControllerUtils.patchObject(foundActivityData, patchData);
+            foundActivityData.setEdited(true);
+
+            return new ResponseEntity<>(cardActivityDataRepository.save(foundActivityData), HttpStatus.OK);
+        }
+        else {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+    }
+
+    @RequestMapping(method=RequestMethod.DELETE, value="/activities/{id}")
+    public ResponseEntity<?> deleteActivity(@PathVariable String id, Principal principal) {
+        String username = principal.getName();
+
+        Optional<ActivityData> optionalActivityData = cardActivityDataRepository.findById(id);
+        if (optionalActivityData.isPresent()) {
+            ActivityData foundActivityData = optionalActivityData.get();
+            AbstractMap.SimpleEntry<ResponseEntity<?>, Board> authorizationCheckResult = checkAuthorization(username, foundActivityData);
+            if (authorizationCheckResult.getKey().getStatusCode() != HttpStatus.OK) {
+                return authorizationCheckResult.getKey();
+            }
+
+            cardActivityDataRepository.delete(foundActivityData);
+            return new ResponseEntity<>(HttpStatus.OK);
+        }
+        else {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+    }
+
+    private AbstractMap.SimpleEntry<ResponseEntity<?>, Board> checkAuthorization(String username, ActivityData activityData) {
+        if (!activityData.getOwnerUsername().equals(username)) {
+            return new AbstractMap.SimpleEntry<>(new ResponseEntity<>(HttpStatus.UNAUTHORIZED), null);
+        }
+        if (activityData.getParentBoardId() == null || activityData.getParentBoardId().isEmpty()) {
+            return new AbstractMap.SimpleEntry<>(new ResponseEntity<>("Activity does not contain parent board ID", HttpStatus.BAD_REQUEST), null);
+        }
+        Optional<Board> optionalBoard = boardRepository.findById(activityData.getParentBoardId());
+        if (optionalBoard.isPresent()) {
+            Board board = optionalBoard.get();
+            if (board.getOwnerUsernames().contains(username)) {
+                    return new AbstractMap.SimpleEntry<>(new ResponseEntity<>(HttpStatus.OK), board);
+            }
+            return new AbstractMap.SimpleEntry<>(new ResponseEntity<>(HttpStatus.UNAUTHORIZED), null);
+        }
+        else {
+            return new AbstractMap.SimpleEntry<>(new ResponseEntity<>("Parent board not found", HttpStatus.BAD_REQUEST), null);
+        }
+    }
 }
 

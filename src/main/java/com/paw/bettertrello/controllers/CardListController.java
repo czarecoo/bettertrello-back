@@ -15,10 +15,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
-import java.util.AbstractMap;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Optional;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @RestController
 @Api(description="Operations pertaining to lists of cards in application")
@@ -195,7 +193,8 @@ public class CardListController {
                     case CARDLIST:
                         return new AbstractMap.SimpleEntry<>(new ResponseEntity<>(cardList, HttpStatus.OK), board);
                     case CARDS:
-                        return new AbstractMap.SimpleEntry<>(new ResponseEntity<>(cardList.getCards(), HttpStatus.OK), board);
+                        List<Card> cardsToShow = new ArrayList<>(cardList.getCards()).stream().filter(card -> !card.isArchived()).collect(Collectors.toList());
+                        return new AbstractMap.SimpleEntry<>(new ResponseEntity<>(cardsToShow, HttpStatus.OK), board);
                     default:
                         throw new IllegalArgumentException();
                 }

@@ -24,16 +24,5 @@ public class CardList {
     @DBRef
     @CascadeSave
     @ApiModelProperty(notes = "List of Cards")
-    @Getter(AccessLevel.NONE)
     List<Card> cards;
-
-    public  List<Card> getCards() {
-        List<Card> cardsToShow = new ArrayList<>();
-        for(Card card: cards) {
-            if(!card.isArchived())
-                cardsToShow.add(card);
-        }
-        return cardsToShow;
-    }
-
 }

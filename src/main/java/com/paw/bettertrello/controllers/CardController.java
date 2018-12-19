@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
 import java.util.AbstractMap;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -29,8 +30,7 @@ public class CardController {
     @Autowired
     BoardController boardController;
 
-    //TODO
-    /*
+    /* TODO.. or not todo
     @ApiOperation(value = "Add an activity to card",response = Board.class)
     @RequestMapping(method= RequestMethod.POST, value="/cards/{id}/activities")
     public ResponseEntity<?> postActivityToCard(@RequestBody ActivityData activityData, @PathVariable String id, Principal principal) {
@@ -38,9 +38,9 @@ public class CardController {
         Optional<Card> optionalCard = cardRepository.findById(id);
         if (optionalCard.isPresent()) {
             Card card = optionalCard.get();
-            ResponseEntity<?> authorizationCheckResult = checkAuthorization(username, card, OkStatusBodyContent.EMPTY);
-            if (authorizationCheckResult.getStatusCode() != HttpStatus.OK) {
-                return authorizationCheckResult;
+            AbstractMap.SimpleEntry<ResponseEntity<?>, Board> authorizationCheckResult = checkAuthorization(username, card, OkStatusBodyContent.EMPTY);
+            if (authorizationCheckResult.getKey().getStatusCode() != HttpStatus.OK) {
+                return authorizationCheckResult.getKey();
             }
             if (card.getActivities() == null) {
                 card.setActivities(new ArrayList<>());
@@ -49,8 +49,8 @@ public class CardController {
             if (card.getActivities() == null) {
                 card.setActivities(new ArrayList<>());
             }
-            cardList.getCards().add(card);
-            return new ResponseEntity<>(cardListRepository.save(cardList), HttpStatus.CREATED);
+            card.getActivities().add(activityData);
+            return new ResponseEntity<>(cardRepository.save(card), HttpStatus.CREATED);
         }
         else {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
@@ -101,6 +101,8 @@ public class CardController {
         }
     }
 
+    /*
+    ///// UNUSED /////
     @ApiOperation(value = "Delete a card")
     @RequestMapping(method=RequestMethod.DELETE, value="/cards/{id}")
     public String deleteCard(@PathVariable String id) {
@@ -110,6 +112,7 @@ public class CardController {
 
         return "";
     }
+    */
 
     private enum OkStatusBodyContent {
         EMPTY,

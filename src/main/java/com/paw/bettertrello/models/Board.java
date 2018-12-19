@@ -1,7 +1,6 @@
 package com.paw.bettertrello.models;
 
 import com.paw.bettertrello.repositories.util.CascadeSave;
-import com.sun.org.apache.xpath.internal.operations.Bool;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import org.springframework.data.annotation.Id;
