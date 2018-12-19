@@ -22,6 +22,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 
 @RestController
@@ -71,6 +72,9 @@ public class BoardController {
         if (optionalBoard.isPresent()) {
             Board board = optionalBoard.get();
             if (board.getOwnerUsernames().contains(username)) {
+                for(CardList cardList: board.getCardLists()){
+                    cardList.getCards().removeIf(Card::isArchived);
+                }
                 return new ResponseEntity<>(board.getCardLists(), HttpStatus.OK);
             }
             else return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
