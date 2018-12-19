@@ -21,6 +21,7 @@ public class Card {
     String description;
     boolean isArchived;
     String cardDeadlineDate;
+    List<String> observerUserNames;
     @DBRef
     @CascadeSave
     List<ActivityData> activities;

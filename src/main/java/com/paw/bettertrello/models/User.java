@@ -1,7 +1,9 @@
 package com.paw.bettertrello.models;
 
+import com.paw.bettertrello.repositories.util.CascadeSave;
 import lombok.Data;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -18,6 +20,9 @@ public class User implements UserDetails {
     String id;
     String username;
     String password;
+    @DBRef
+    @CascadeSave
+    List<ActivityData> notifications;
     boolean isEnabled = true; //by default accounts are verified
 
     @Override
