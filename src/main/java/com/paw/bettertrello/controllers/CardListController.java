@@ -172,14 +172,14 @@ public class CardListController {
         return "";
     }
 
-    private enum OkStatusBodyContent {
+    public enum OkStatusBodyContent {
         EMPTY,
         CARDLIST,
         CARDS
     }
 
     //Returns pair of ResponseEntity (key) and parent board of object (value)
-    private AbstractMap.SimpleEntry<ResponseEntity<?>, Board> checkAuthorization(String username, CardList cardList, OkStatusBodyContent bodyContent) {
+    public AbstractMap.SimpleEntry<ResponseEntity<?>, Board> checkAuthorization(String username, CardList cardList, OkStatusBodyContent bodyContent) {
         if (cardList.getParentBoardId() == null || cardList.getParentBoardId().isEmpty()) {
             return new AbstractMap.SimpleEntry<>(new ResponseEntity<>("List does not contain parent board ID", HttpStatus.BAD_REQUEST), null);
         }

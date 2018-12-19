@@ -1,10 +1,8 @@
 package com.paw.bettertrello.controllers;
 
-import com.paw.bettertrello.models.ActivityData;
-import com.paw.bettertrello.models.Board;
-import com.paw.bettertrello.models.Card;
-import com.paw.bettertrello.models.CheckListItem;
+import com.paw.bettertrello.models.*;
 import com.paw.bettertrello.repositories.BoardRepository;
+import com.paw.bettertrello.repositories.CardListRepository;
 import com.paw.bettertrello.repositories.CardRepository;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -23,6 +21,10 @@ public class CardController {
 
     @Autowired
     CardRepository cardRepository;
+    @Autowired
+    CardListRepository cardListRepository;
+    @Autowired
+    CardListController cardListController;
     @Autowired
     BoardRepository boardRepository;
     @Autowired
@@ -55,6 +57,32 @@ public class CardController {
             //-------------------------------------------------------------------
 
             return new ResponseEntity<>(cardRepository.save(card), HttpStatus.CREATED);
+        }
+        else {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+    }
+
+    @RequestMapping(method=RequestMethod.POST, value="/cards/{id}/copy")
+    public ResponseEntity<?> copyCardToList(@RequestBody CopyCardDestination copyCardDestination, @PathVariable String id, Principal principal){
+        String username = principal.getName();
+        Optional<Card> optionalCard = cardRepository.findById(id);
+        Optional<CardList> optionalCardListToPaste = cardListRepository.findById(copyCardDestination.listId);
+        if (optionalCard.isPresent() && optionalCardListToPaste.isPresent()) {
+            Card card = optionalCard.get();
+            CardList cardListToPaste = optionalCardListToPaste.get();
+            AbstractMap.SimpleEntry<ResponseEntity<?>, Board> authorizationCheckResultForCard = checkAuthorization(username, card, OkStatusBodyContent.EMPTY);
+            AbstractMap.SimpleEntry<ResponseEntity<?>, Board> authorizationCheckResultForCardList = cardListController.checkAuthorization(username, cardListToPaste, CardListController.OkStatusBodyContent.EMPTY);
+            if (authorizationCheckResultForCard.getKey().getStatusCode() != HttpStatus.OK) {
+                return authorizationCheckResultForCard.getKey();
+            }
+            else if(authorizationCheckResultForCardList.getKey().getStatusCode() != HttpStatus.OK) {
+                return authorizationCheckResultForCardList.getKey();
+            }
+            card.setParentBoardId(cardListToPaste.getParentBoardId());
+            card.setId(null);
+            cardListToPaste.getCards().add(copyCardDestination.listPosition,card);
+            return new ResponseEntity<>(cardListRepository.save(cardListToPaste), HttpStatus.CREATED);
         }
         else {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
@@ -179,5 +207,10 @@ public class CardController {
         activityData.setData(" added checklist item " + checkListItem.getData() + " to " + card.getName());
         activityData.setDate(ControllerUtils.getCurrentDate());
         return activityData;
+    }
+
+    private class CopyCardDestination {
+        String listId;
+        int listPosition;
     }
 }
