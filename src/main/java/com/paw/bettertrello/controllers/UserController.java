@@ -10,6 +10,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
+import java.security.Principal;
 import java.util.ArrayList;
 import java.util.Optional;
 
@@ -47,14 +48,16 @@ public class UserController {
         }
     }
 
-   /* @RequestMapping(method= RequestMethod.DELETE, value="/users/notifications")
-    public ResponseEntity<?> deleteUserNotifications(@RequestBody User user) {
-        Optional<User> optionalUser = userRepository.findByUsername(user.getUsername());
-        if(optionalUser.isPresent()){
-
-        }
-        else{
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-        }
-    }*/
+   @RequestMapping(method= RequestMethod.DELETE, value="/users/notifications")
+    public ResponseEntity<?> deleteUserNotifications(Principal principal) {
+        String userName = principal.getName();
+       Optional<User> optionalUser = userRepository.findByUsername(userName);
+       if (optionalUser.isPresent()) {
+           User user = optionalUser.get();
+           user.getNotifications().clear();
+           return new ResponseEntity<>(userRepository.save(user), HttpStatus.OK);
+       } else {
+           return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+       }
+   }
 }
