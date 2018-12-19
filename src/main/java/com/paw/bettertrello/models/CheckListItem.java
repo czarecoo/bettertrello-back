@@ -12,4 +12,5 @@ public class CheckListItem {
     String data;
     boolean isDone;
     String parentBoardId;
+    String parentCardId; //To remove dbref from parent card when checklistitem is removed
 }

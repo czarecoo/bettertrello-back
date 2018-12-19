@@ -2,9 +2,11 @@ package com.paw.bettertrello.controllers;
 
 import com.paw.bettertrello.models.ActivityData;
 import com.paw.bettertrello.models.Board;
+import com.paw.bettertrello.models.Card;
 import com.paw.bettertrello.models.CheckListItem;
 import com.paw.bettertrello.repositories.BoardRepository;
 import com.paw.bettertrello.repositories.CardActivityDataRepository;
+import com.paw.bettertrello.repositories.CardRepository;
 import com.paw.bettertrello.repositories.CheckListItemRepository;
 import io.swagger.annotations.Api;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,6 +25,8 @@ public class CheckListItemController {
 
     @Autowired
     CheckListItemRepository checkListItemRepository;
+    @Autowired
+    CardRepository cardRepository;
     @Autowired
     BoardRepository boardRepository;
 
@@ -66,6 +70,16 @@ public class CheckListItemController {
             AbstractMap.SimpleEntry<ResponseEntity<?>, Board> authorizationCheckResult = checkAuthorization(username, foundCheckListItem);
             if (authorizationCheckResult.getKey().getStatusCode() != HttpStatus.OK) {
                 return authorizationCheckResult.getKey();
+            }
+
+            //REMOVE DBREF FROM PARENT CARD
+            Optional<Card> parentCard = cardRepository.findById(foundCheckListItem.getParentCardId());
+            if (!parentCard.isPresent()) {
+                return new ResponseEntity<>("Parent card not found", HttpStatus.BAD_REQUEST);
+            }
+            else {
+                Card card = parentCard.get();
+                card.getCheckListItems().remove(foundCheckListItem);
             }
 
             checkListItemRepository.delete(foundCheckListItem);

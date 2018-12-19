@@ -46,6 +46,7 @@ public class CardController {
                 card.setCheckListItems(new ArrayList<>());
             }
             checkListItem.setParentBoardId(card.getParentBoardId());
+            checkListItem.setParentCardId(card.getId());
             card.getCheckListItems().add(checkListItem);
 
             ActivityData activityData = prepareCheckListCreationActivity(card, checkListItem, username);
@@ -108,6 +109,7 @@ public class CardController {
                 card.setActivities(new ArrayList<>());
             }
             activityData.setParentBoardId(card.getParentBoardId());
+            activityData.setParentCardId(card.getId());
             card.getActivities().add(activityData);
             return new ResponseEntity<>(cardRepository.save(card), HttpStatus.CREATED);
         }

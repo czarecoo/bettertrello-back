@@ -6,6 +6,7 @@ import com.paw.bettertrello.models.Card;
 import com.paw.bettertrello.models.CardList;
 import com.paw.bettertrello.repositories.BoardRepository;
 import com.paw.bettertrello.repositories.CardActivityDataRepository;
+import com.paw.bettertrello.repositories.CardRepository;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,6 +26,8 @@ public class CardActivityDataController {
 
     @Autowired
     CardActivityDataRepository cardActivityDataRepository;
+    @Autowired
+    CardRepository cardRepository;
     @Autowired
     BoardRepository boardRepository;
 
@@ -76,6 +79,16 @@ public class CardActivityDataController {
             AbstractMap.SimpleEntry<ResponseEntity<?>, Board> authorizationCheckResult = checkAuthorization(username, foundActivityData);
             if (authorizationCheckResult.getKey().getStatusCode() != HttpStatus.OK) {
                 return authorizationCheckResult.getKey();
+            }
+
+            //REMOVE DBREF FROM PARENT CARD
+            Optional<Card> parentCard = cardRepository.findById(foundActivityData.getParentCardId());
+            if (!parentCard.isPresent()) {
+                return new ResponseEntity<>("Parent card not found", HttpStatus.BAD_REQUEST);
+            }
+            else {
+                Card card = parentCard.get();
+                card.getActivities().remove(foundActivityData);
             }
 
             cardActivityDataRepository.delete(foundActivityData);
