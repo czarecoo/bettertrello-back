@@ -41,7 +41,8 @@ public class BoardController {
     @RequestMapping(method=RequestMethod.GET, value="/boards")
     public ResponseEntity<?> getBoards(Principal principal) {
         List<Board> boardList = boardRepository.findAllByOwnerUsernamesContaining(principal.getName());
-        return new ResponseEntity<>(boardList.removeIf(Board::isArchived), HttpStatus.OK);
+        boardList.removeIf(Board::isArchived);
+        return new ResponseEntity<>(boardList, HttpStatus.OK);
     }
 
     @ApiOperation(value = "Search a board with an ID",response = Optional.class)
