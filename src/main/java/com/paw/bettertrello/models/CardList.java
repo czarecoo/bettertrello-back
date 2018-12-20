@@ -20,6 +20,7 @@ public class CardList {
     String id;
     @ApiModelProperty(notes = "The name of the CardList")
     String name;
+    @ApiModelProperty(notes = "Id of board in which we got this cardlist")
     String parentBoardId;
     @DBRef
     @CascadeSave

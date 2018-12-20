@@ -18,11 +18,15 @@ public class Board {
     String id;
     @ApiModelProperty(notes = "The name of the Board")
     String name;
+    @ApiModelProperty(notes = "Color layout for board icon")
     String color;
+    @ApiModelProperty(notes = "Collection describing users and their permisions on board")
     Map<String, BoardAuthority> userPermissionsMap;
+    @ApiModelProperty(notes = "Flag describing if board is archived")
     boolean isArchived;
     @DBRef
     @CascadeSave
+    @ApiModelProperty(notes = "Collections on activietes done on board")
     List<ActivityData> activities;
     @DBRef
     @CascadeSave

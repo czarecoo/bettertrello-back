@@ -19,16 +19,24 @@ public class Card {
     String id;
     @ApiModelProperty(notes = "The name of the Card")
     String name;
+    @ApiModelProperty(notes = "Username of person whose created this card")
     String ownerUsername;
+    @ApiModelProperty(notes = "Describes more about the task from this card")
     String description;
+    @ApiModelProperty(notes = "Flag describing if card is archived")
     boolean isArchived;
+    @ApiModelProperty(notes = "Date in which the task must be done")
     String cardDeadlineDate;
+    @ApiModelProperty(notes = "Collection of usernames whose will get notification about new comment or different activity")
     Set<String> observerUserNames;
     @DBRef
     @CascadeSave
+    @ApiModelProperty(notes = "Collections on activietes done on card")
     List<ActivityData> activities;
     @DBRef
     @CascadeSave
+    @ApiModelProperty(notes = "Collection of smaller tasks to card")
     List<CheckListItem> checkListItems;
+    @ApiModelProperty(notes = "Id of board in which we got this card")
     String parentBoardId;
 }

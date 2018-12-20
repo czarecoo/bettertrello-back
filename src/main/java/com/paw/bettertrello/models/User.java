@@ -1,6 +1,7 @@
 package com.paw.bettertrello.models;
 
 import com.paw.bettertrello.repositories.util.CascadeSave;
+import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.DBRef;
@@ -17,7 +18,9 @@ import java.util.List;
 public class User implements UserDetails {
 
     @Id
+    @ApiModelProperty(notes = "The auto-generated ID of the user")
     String id;
+    @ApiModelProperty(notes = "Username of the user ")
     String username;
     String password;
     @DBRef
