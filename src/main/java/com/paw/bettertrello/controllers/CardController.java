@@ -112,9 +112,10 @@ public class CardController {
             if (card.getActivities() == null) {
                 card.setActivities(new ArrayList<>());
             }
-            activityData.setParentBoardId(card.getParentBoardId());
-            activityData.setParentCardId(card.getId());
-            card.getActivities().add(0,activityData);
+
+            //Add activity to board-------------------------------------------------
+            card.getActivities().add(0, prepareCommentCreationActivity(activityData, username));
+            //-----------------------------------------------------------------------
 
             for(Iterator<String> iterator = card.getObserverUserNames().iterator();iterator.hasNext();){
                 Optional<User> optionalUser = userRepository.findByUsername(iterator.next());
@@ -209,7 +210,7 @@ public class CardController {
                 handlePatchingActivityData(patchData, foundCard, username, authorizationCheckResult.getValue());
             }
 
-            //Add deadline change info to board-----------------------------------------
+            //Add deadline change info to board--------------------------------------
             if (patchData.getCardDeadlineDate() != null) {
                 ActivityData activityData = BoardController.prepareDeadlineUpdateActivity(foundCard, patchData, username);
                 boardController.addActivityToBoard(authorizationCheckResult.getValue(), activityData);
@@ -263,22 +264,7 @@ public class CardController {
     private Card handlePatchingActivityData(Card patchData, Card toBePatched, String username, Board parentBoard) {
         List<ActivityData> activities = patchData.getActivities();
         ActivityData lastActivity = patchData.getActivities().get(activities.size() - 1);
-        if (lastActivity.getOwnerUsername() == null || lastActivity.getOwnerUsername().isEmpty()) {
-            lastActivity.setOwnerUsername(username);
-        }
-        if (lastActivity.getDate() == null || lastActivity.getDate().isEmpty()) {
-            lastActivity.setDate(ControllerUtils.getCurrentDate());
-        }
-        if (lastActivity.getData() == null) {
-            lastActivity.setData("");
-        }
-        if (lastActivity.getParentCardId() == null) {
-            lastActivity.setParentCardId(toBePatched.getId());
-        }
-        if (lastActivity.getParentBoardId() == null) {
-            lastActivity.setParentBoardId(parentBoard.getId());
-        }
-        lastActivity.setEditable(true);
+        prepareCommentCreationActivity(lastActivity, username);
         return patchData;
     }
 
@@ -287,6 +273,26 @@ public class CardController {
         activityData.setOwnerUsername(username);
         activityData.setData(" added checklist item " + checkListItem.getData() + " to " + card.getName());
         activityData.setDate(ControllerUtils.getCurrentDate());
+        return activityData;
+    }
+
+    public static ActivityData prepareCommentCreationActivity(ActivityData activityData, String username) {
+        if (activityData.getOwnerUsername() == null || activityData.getOwnerUsername().isEmpty()) {
+            activityData.setOwnerUsername(username);
+        }
+        if (activityData.getDate() == null || activityData.getDate().isEmpty()) {
+            activityData.setDate(ControllerUtils.getCurrentDate());
+        }
+        if (activityData.getData() == null) {
+            activityData.setData("");
+        }
+        if (activityData.getParentCardId() == null) {
+            activityData.setParentCardId(activityData.getId());
+        }
+        if (activityData.getParentBoardId() == null) {
+            activityData.setParentBoardId(activityData.getId());
+        }
+        activityData.setEditable(true);
         return activityData;
     }
 
