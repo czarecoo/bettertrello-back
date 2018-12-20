@@ -281,7 +281,7 @@ public class BoardController {
 
     public void addActivityToBoard(Board board, ActivityData activityData) {
         //TODO: Add enum type to activity describing what kind of activity it is.
-        board.getActivities().add(activityData);
+        board.getActivities().add(0, activityData);
         boardRepository.save(board);
     }
 }
