@@ -97,6 +97,9 @@ public class BoardController {
         if (board.getActivities() == null) {
             board.setActivities(new ArrayList<>());
         }
+        if (board.getCardLists() == null) {
+            board.setCardLists(new ArrayList<>());
+        }
         return new ResponseEntity<>(boardRepository.save(board), HttpStatus.CREATED);
     }
 
