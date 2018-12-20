@@ -79,12 +79,12 @@ public class BoardController {
         String username = principal.getName();
 
         if (board.getUserPermissionsMap() == null) {
-            HashMap<String, BoardPermission> map = new HashMap<>();
-            map.put(username, BoardPermission.OWNER);
+            HashMap<String, BoardAuthority> map = new HashMap<>();
+            map.put(username, BoardAuthority.OWNER);
             board.setUserPermissionsMap(map);
         }
         else if (!board.getUserPermissionsMap().containsKey(username)) {
-            board.getUserPermissionsMap().put(username, BoardPermission.OWNER);
+            board.getUserPermissionsMap().put(username, BoardAuthority.OWNER);
         }
         if (board.getActivities() == null) {
             board.setActivities(new ArrayList<>());
@@ -102,7 +102,7 @@ public class BoardController {
         Optional<Board> optionalBoard = boardRepository.findById(id);
         if(optionalBoard.isPresent()) {
             Board board = optionalBoard.get();
-            board.getUserPermissionsMap().put(username, BoardPermission.NORMAL_USER);
+            board.getUserPermissionsMap().put(username, BoardAuthority.NORMAL_USER);
             return new ResponseEntity<>(boardRepository.save(board), HttpStatus.CREATED);
         }
         else {
@@ -144,7 +144,7 @@ public class BoardController {
 
         String username = principal.getName();
 
-        if (!board.getUserPermissionsMap().containsKey(username) && board.getUserPermissionsMap().get(username) != BoardPermission.OWNER) {
+        if (!board.getUserPermissionsMap().containsKey(username) && board.getUserPermissionsMap().get(username) != BoardAuthority.OWNER) {
             return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
         }
 
@@ -165,7 +165,7 @@ public class BoardController {
 
             //Non-owner cannot archive a board
             if (foundBoard.isArchived()) {
-                if (!board.getUserPermissionsMap().containsKey(username) && board.getUserPermissionsMap().get(username) != BoardPermission.OWNER) {
+                if (!board.getUserPermissionsMap().containsKey(username) && board.getUserPermissionsMap().get(username) != BoardAuthority.OWNER) {
                     return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
                 }
             }
@@ -204,7 +204,7 @@ public class BoardController {
 
             //Non-owner cannot archive a board
             if (patchData.isArchived()) {
-                if (!foundBoard.getUserPermissionsMap().containsKey(username) && foundBoard.getUserPermissionsMap().get(username) != BoardPermission.OWNER) {
+                if (!foundBoard.getUserPermissionsMap().containsKey(username) && foundBoard.getUserPermissionsMap().get(username) != BoardAuthority.OWNER) {
                     return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
                 }
             }
@@ -232,7 +232,7 @@ public class BoardController {
         Optional<Board> optionalBoard = boardRepository.findById(id);
         if (optionalBoard.isPresent()) {
             Board board = optionalBoard.get();
-            if (!board.getUserPermissionsMap().containsKey(username) && board.getUserPermissionsMap().get(username) != BoardPermission.OWNER) {
+            if (!board.getUserPermissionsMap().containsKey(username) && board.getUserPermissionsMap().get(username) != BoardAuthority.OWNER) {
                 boardRepository.delete(board);
                 return new ResponseEntity<>(HttpStatus.OK);
             }

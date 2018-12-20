@@ -1,5 +1,5 @@
 package com.paw.bettertrello.models;
 
-public enum BoardPermission {
+public enum BoardAuthority {
     OWNER, NORMAL_USER
 }

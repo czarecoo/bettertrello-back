@@ -19,7 +19,7 @@ public class Board {
     @ApiModelProperty(notes = "The name of the Board")
     String name;
     String color;
-    Map<String, BoardPermission> userPermissionsMap;
+    Map<String, BoardAuthority> userPermissionsMap;
     boolean isArchived;
     @DBRef
     @CascadeSave
