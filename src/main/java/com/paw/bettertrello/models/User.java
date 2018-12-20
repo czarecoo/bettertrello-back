@@ -20,6 +20,7 @@ public class User implements UserDetails {
     String id;
     String username;
     String password;
+    String avatar;
     @DBRef
     @CascadeSave
     List<ActivityData> notifications;
