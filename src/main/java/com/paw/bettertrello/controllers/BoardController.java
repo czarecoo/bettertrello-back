@@ -104,7 +104,6 @@ public class BoardController {
     @ApiOperation(value = "Add an User to Board",response = Board.class)
     @RequestMapping(method=RequestMethod.POST, value="/boards/{id}/users/{username}")
     public ResponseEntity<?> postUserToBoard(@PathVariable String id, @PathVariable String username, Principal principal) {
-        String addingUserUsername = principal.getName();
         Optional<Board> optionalBoard = boardRepository.findById(id);
         if(optionalBoard.isPresent()) {
             Board board = optionalBoard.get();
