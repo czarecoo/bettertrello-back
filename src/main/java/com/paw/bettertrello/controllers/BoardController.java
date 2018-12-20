@@ -9,6 +9,7 @@ import io.swagger.annotations.ApiResponses;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.parameters.P;
 import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
@@ -96,9 +97,9 @@ public class BoardController {
     }
 
     @ApiOperation(value = "Add an User to Board",response = Board.class)
-    @RequestMapping(method=RequestMethod.POST, value="/boards/{id}/users")
-    public ResponseEntity<?> postUserToBoard(@PathVariable String id, Principal principal) {
-        String username = principal.getName();
+    @RequestMapping(method=RequestMethod.POST, value="/boards/{id}/users/{username}")
+    public ResponseEntity<?> postUserToBoard(@PathVariable String id, @PathVariable String username, Principal principal) {
+        String addingUserUsername = principal.getName();
         Optional<Board> optionalBoard = boardRepository.findById(id);
         if(optionalBoard.isPresent()) {
             Board board = optionalBoard.get();
