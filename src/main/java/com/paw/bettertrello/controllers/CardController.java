@@ -241,11 +241,6 @@ public class CardController {
         }
     }
 
-    private enum OkStatusBodyContent {
-        EMPTY,
-        CARD
-    }
-
     //Returns pair of ResponseEntity (key) and parent board of object (value)
     private AbstractMap.SimpleEntry<ResponseEntity<?>, Board> checkAuthorization(String username, Card card) {
         if (card.getParentBoardId() == null || card.getParentBoardId().isEmpty()) {
