@@ -52,6 +52,7 @@ public class UserController {
         }
     }
 
+    @ApiOperation(value = "Add or change avator for user")
     @RequestMapping(method= RequestMethod.POST, value="/user/avatar")
     public ResponseEntity<?> postUserAvatar(@RequestBody String avatar, Principal principal) {
         String userName = principal.getName();
@@ -67,6 +68,7 @@ public class UserController {
         }
     }
 
+    @ApiOperation(value = "Change user password")
     @RequestMapping(method= RequestMethod.POST, value="/user/password")
     public ResponseEntity<?> postUserPassword(@RequestBody String password, Principal principal) {
         String userName = principal.getName();
@@ -95,7 +97,8 @@ public class UserController {
         }
     }
 
-   @RequestMapping(method= RequestMethod.DELETE, value="/users/notifications")
+    @ApiOperation(value = "Delete user notifications", response = User.class)
+    @RequestMapping(method= RequestMethod.DELETE, value="/users/notifications")
     public ResponseEntity<?> deleteUserNotifications(Principal principal) {
         String userName = principal.getName();
         Optional<User> optionalUser = userRepository.findByUsername(userName);
