@@ -2,10 +2,12 @@ package com.paw.bettertrello.controllers;
 
 import com.paw.bettertrello.models.*;
 import com.paw.bettertrello.repositories.BoardRepository;
+import com.paw.bettertrello.repositories.UserRepository;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
+import net.bytebuddy.asm.Advice;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -23,6 +25,8 @@ public class BoardController {
 
     @Autowired
     BoardRepository boardRepository;
+    @Autowired
+    UserRepository userRepository;
 
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Successfully retrieved board")
@@ -103,6 +107,9 @@ public class BoardController {
         Optional<Board> optionalBoard = boardRepository.findById(id);
         if(optionalBoard.isPresent()) {
             Board board = optionalBoard.get();
+            if (!userRepository.findByUsername(username).isPresent()) {
+                return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+            }
             board.getUserPermissionsMap().put(username, BoardAuthority.NORMAL_USER);
             return new ResponseEntity<>(boardRepository.save(board), HttpStatus.CREATED);
         }
