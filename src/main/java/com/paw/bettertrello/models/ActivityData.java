@@ -13,8 +13,8 @@ public class ActivityData {
     String ownerUsername;
     String data;
     String date;
-    boolean isEditable; //Activity is not editable by default
-    boolean isEdited; //Marks activity as edited if it was edited (and can be edited)
+    Boolean isEditable; //Activity is not editable by default
+    Boolean isEdited; //Marks activity as edited if it was edited (and can be edited)
     String parentBoardId;
     String parentCardId; //To remove dbref from parent card when activitydata is removed
 }

@@ -52,12 +52,12 @@ public class CardActivityDataController {
             }
 
             //Check if an activity can be editable
-            //if (!foundActivityData.isEditable()) {
-                //return new ResponseEntity<>(HttpStatus.LOCKED);
-            //}
+            if (!foundActivityData.getIsEditable()) {
+                return new ResponseEntity<>(HttpStatus.LOCKED);
+            }
 
             foundActivityData = ControllerUtils.patchObject(foundActivityData, patchData);
-            foundActivityData.setEdited(true);
+            foundActivityData.setIsEdited(true);
 
             return new ResponseEntity<>(cardActivityDataRepository.save(foundActivityData), HttpStatus.OK);
         }

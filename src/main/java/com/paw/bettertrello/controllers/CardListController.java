@@ -91,6 +91,7 @@ public class CardListController {
             if (card.getCheckListItems() == null) {
                 card.setCheckListItems(new ArrayList<>());
             }
+            card.setIsArchived(true);
             cardList.getCards().add(card);
             return new ResponseEntity<>(cardListRepository.save(cardList), HttpStatus.CREATED);
         }
@@ -202,7 +203,7 @@ public class CardListController {
                     case CARDLIST:
                         return new AbstractMap.SimpleEntry<>(new ResponseEntity<>(cardList, HttpStatus.OK), board);
                     case CARDS:
-                        List<Card> cardsToShow = new ArrayList<>(cardList.getCards()).stream().filter(card -> !card.isArchived()).collect(Collectors.toList());
+                        List<Card> cardsToShow = new ArrayList<>(cardList.getCards()).stream().filter(card -> !card.getIsArchived()).collect(Collectors.toList());
                         return new AbstractMap.SimpleEntry<>(new ResponseEntity<>(cardsToShow, HttpStatus.OK), board);
                     default:
                         throw new IllegalArgumentException();

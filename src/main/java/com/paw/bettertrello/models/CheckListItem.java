@@ -10,7 +10,7 @@ public class CheckListItem {
     @Id
     String id;
     String data;
-    boolean isDone;
+    Boolean isDone;
     String parentBoardId;
     String parentCardId; //To remove dbref from parent card when checklistitem is removed
 }

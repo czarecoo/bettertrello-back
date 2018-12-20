@@ -37,7 +37,7 @@ public class BoardController {
     @RequestMapping(method=RequestMethod.GET, value="/boards")
     public ResponseEntity<?> getBoards(Principal principal) {
         List<Board> boardList = boardRepository.findAllByOwnerUsernamesContaining("userPermissionsMap." + principal.getName());
-        boardList.removeIf(Board::isArchived);
+        boardList.removeIf(Board::getIsArchived);
         return new ResponseEntity<>(boardList, HttpStatus.OK);
     }
 
@@ -50,7 +50,7 @@ public class BoardController {
             Board board = optionalBoard.get();
             if (board.getUserPermissionsMap().containsKey(username)) {
                 for(CardList cardList: board.getCardLists()){
-                    cardList.getCards().removeIf(Card::isArchived);
+                    cardList.getCards().removeIf(Card::getIsArchived);
                 }
                 return new ResponseEntity<>(board, HttpStatus.OK);
             }
@@ -68,7 +68,7 @@ public class BoardController {
             Board board = optionalBoard.get();
             if (board.getUserPermissionsMap().containsKey(username)) {
                 for(CardList cardList: board.getCardLists()){
-                    cardList.getCards().removeIf(Card::isArchived);
+                    cardList.getCards().removeIf(Card::getIsArchived);
                 }
                 return new ResponseEntity<>(board.getCardLists(), HttpStatus.OK);
             }
@@ -97,6 +97,7 @@ public class BoardController {
         if (board.getCardLists() == null) {
             board.setCardLists(new ArrayList<>());
         }
+        board.setIsArchived(false);
         return new ResponseEntity<>(boardRepository.save(board), HttpStatus.CREATED);
     }
 
@@ -172,7 +173,7 @@ public class BoardController {
             Board foundBoard = optionalBoard.get();
 
             //Non-owner cannot archive a board
-            if (foundBoard.isArchived()) {
+            if (foundBoard.getIsArchived()) {
                 if (!board.getUserPermissionsMap().containsKey(username) && board.getUserPermissionsMap().get(username) != BoardAuthority.OWNER) {
                     return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
                 }
@@ -211,7 +212,7 @@ public class BoardController {
             Board foundBoard = optionalBoard.get();
 
             //Non-owner cannot archive a board
-            if (patchData.isArchived()) {
+            if (patchData.getIsArchived() != null && patchData.getIsArchived()) {
                 if (!foundBoard.getUserPermissionsMap().containsKey(username) && foundBoard.getUserPermissionsMap().get(username) != BoardAuthority.OWNER) {
                     return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
                 }
@@ -255,7 +256,7 @@ public class BoardController {
         ActivityData boardActivityData = new ActivityData();
         boardActivityData.setOwnerUsername(activityData.getOwnerUsername());
         boardActivityData.setDate(activityData.getDate());
-        boardActivityData.setEditable(false);
+        boardActivityData.setIsEditable(false);
         boardActivityData.setData(" added comment on " + cardName + " \"" + activityData.getData() + "\"");
         return boardActivityData;
     }
@@ -264,7 +265,7 @@ public class BoardController {
         ActivityData boardActivityData = new ActivityData();
         boardActivityData.setOwnerUsername(username);
         boardActivityData.setDate(ControllerUtils.getCurrentDate());
-        boardActivityData.setEditable(false);
+        boardActivityData.setIsEditable(false);
         boardActivityData.setData(" changed deadline of " + oldCard.getName() + " from " + oldCard.getCardDeadlineDate() + " to " + newCard.getCardDeadlineDate());
         return boardActivityData;
     }
@@ -273,7 +274,7 @@ public class BoardController {
         ActivityData boardActivityData = new ActivityData();
         boardActivityData.setOwnerUsername(username);
         boardActivityData.setDate(ControllerUtils.getCurrentDate());
-        boardActivityData.setEditable(false);
+        boardActivityData.setIsEditable(false);
         boardActivityData.setData(username + " copied "+ copyCardDestination.getNewName() + " from " + cardName + " to list " + copiedCardListName);
         return boardActivityData;
     }
@@ -282,7 +283,7 @@ public class BoardController {
         ActivityData boardActivityData = new ActivityData();
         boardActivityData.setOwnerUsername(username);
         boardActivityData.setDate(ControllerUtils.getCurrentDate());
-        boardActivityData.setEditable(false);
+        boardActivityData.setIsEditable(false);
         boardActivityData.setData(" added list " + cardList.getName() + " to this board");
         return boardActivityData;
     }
@@ -291,7 +292,7 @@ public class BoardController {
         ActivityData boardActivityData = new ActivityData();
         boardActivityData.setOwnerUsername(username);
         boardActivityData.setDate(ControllerUtils.getCurrentDate());
-        boardActivityData.setEditable(false);
+        boardActivityData.setIsEditable(false);
         boardActivityData.setData(" renamed list " + oldCardList.getName() + " to " + newCardList.getName());
         return boardActivityData;
     }
@@ -300,7 +301,7 @@ public class BoardController {
         ActivityData boardActivityData = new ActivityData();
         boardActivityData.setOwnerUsername(username);
         boardActivityData.setDate(ControllerUtils.getCurrentDate());
-        boardActivityData.setEditable(false);
+        boardActivityData.setIsEditable(false);
         boardActivityData.setData(" renamed this board " + oldBoard.getName() + " to " + newBoard.getName());
         return boardActivityData;
     }

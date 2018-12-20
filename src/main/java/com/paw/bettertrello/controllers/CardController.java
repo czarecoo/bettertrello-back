@@ -50,6 +50,7 @@ public class CardController {
             }
             checkListItem.setParentBoardId(card.getParentBoardId());
             checkListItem.setParentCardId(card.getId());
+            checkListItem.setIsDone(false);
             card.getCheckListItems().add(checkListItem);
 
             ActivityData activityData = prepareCheckListCreationActivity(card, checkListItem, username);
@@ -57,7 +58,7 @@ public class CardController {
             boardController.addActivityToBoard(authorizationCheckResult.getValue(), activityData);
             //-------------------------------------------------------------------
             //Add card creation info to created card
-            card.getActivities().add(0,activityData);
+            card.getActivities().add(0, activityData);
             //-------------------------------------------------------------------
 
             return new ResponseEntity<>(cardRepository.save(card), HttpStatus.CREATED);
@@ -83,7 +84,7 @@ public class CardController {
             else if(authorizationCheckResultForCardList.getKey().getStatusCode() != HttpStatus.OK) {
                 return authorizationCheckResultForCardList.getKey();
             }
-            ActivityData activityData = boardController.prepareCopyCardActivity(card.getName(),copyCardDestination, cardListToPaste.getName(),username);
+            ActivityData activityData = BoardController.prepareCopyCardActivity(card.getName(),copyCardDestination, cardListToPaste.getName(),username);
             card.setParentBoardId(cardListToPaste.getParentBoardId());
             card.setName(copyCardDestination.getNewName());
             card.setId(null);
@@ -282,6 +283,7 @@ public class CardController {
         activityData.setOwnerUsername(username);
         activityData.setData(" added checklist item " + checkListItem.getData() + " to " + card.getName());
         activityData.setDate(ControllerUtils.getCurrentDate());
+        activityData.setIsEditable(false);
         return activityData;
     }
 
@@ -301,7 +303,7 @@ public class CardController {
         if (activityData.getParentBoardId() == null) {
             activityData.setParentBoardId(parentCard.getParentBoardId());
         }
-        activityData.setEditable(true);
+        activityData.setIsEditable(true);
         return activityData;
     }
 

@@ -20,7 +20,7 @@ public class Board {
     String name;
     String color;
     Map<String, BoardAuthority> userPermissionsMap;
-    boolean isArchived;
+    Boolean isArchived;
     @DBRef
     @CascadeSave
     List<ActivityData> activities;

@@ -21,7 +21,7 @@ public class Card {
     String name;
     String ownerUsername;
     String description;
-    boolean isArchived;
+    Boolean isArchived;
     String cardDeadlineDate;
     Set<String> observerUserNames;
     @DBRef
