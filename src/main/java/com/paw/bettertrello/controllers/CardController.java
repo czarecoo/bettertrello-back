@@ -41,7 +41,7 @@ public class CardController {
         Optional<Card> optionalCard = cardRepository.findById(id);
         if (optionalCard.isPresent()) {
             Card card = optionalCard.get();
-            AbstractMap.SimpleEntry<ResponseEntity<?>, Board> authorizationCheckResult = checkAuthorization(username, card, OkStatusBodyContent.EMPTY);
+            AbstractMap.SimpleEntry<ResponseEntity<?>, Board> authorizationCheckResult = checkAuthorization(username, card);
             if (authorizationCheckResult.getKey().getStatusCode() != HttpStatus.OK) {
                 return authorizationCheckResult.getKey();
             }
@@ -76,7 +76,7 @@ public class CardController {
         if (optionalCard.isPresent() && optionalCardListToPaste.isPresent()) {
             Card card = optionalCard.get();
             CardList cardListToPaste = optionalCardListToPaste.get();
-            AbstractMap.SimpleEntry<ResponseEntity<?>, Board> authorizationCheckResultForCard = checkAuthorization(username, card, OkStatusBodyContent.EMPTY);
+            AbstractMap.SimpleEntry<ResponseEntity<?>, Board> authorizationCheckResultForCard = checkAuthorization(username, card);
             AbstractMap.SimpleEntry<ResponseEntity<?>, Board> authorizationCheckResultForCardList = cardListController.checkAuthorization(username, cardListToPaste, CardListController.OkStatusBodyContent.EMPTY);
             if (authorizationCheckResultForCard.getKey().getStatusCode() != HttpStatus.OK) {
                 return authorizationCheckResultForCard.getKey();
@@ -108,7 +108,7 @@ public class CardController {
         Optional<Card> optionalCard = cardRepository.findById(id);
         if (optionalCard.isPresent()) {
             Card card = optionalCard.get();
-            AbstractMap.SimpleEntry<ResponseEntity<?>, Board> authorizationCheckResult = checkAuthorization(username, card, OkStatusBodyContent.EMPTY);
+            AbstractMap.SimpleEntry<ResponseEntity<?>, Board> authorizationCheckResult = checkAuthorization(username, card);
             if (authorizationCheckResult.getKey().getStatusCode() != HttpStatus.OK) {
                 return authorizationCheckResult.getKey();
             }
@@ -150,7 +150,7 @@ public class CardController {
         if (optionalCard.isPresent() && optionalUser.isPresent()) {
             Card card = optionalCard.get();
             User user = optionalUser.get();
-            AbstractMap.SimpleEntry<ResponseEntity<?>, Board> authorizationCheckResult = checkAuthorization(username, card, OkStatusBodyContent.EMPTY);
+            AbstractMap.SimpleEntry<ResponseEntity<?>, Board> authorizationCheckResult = checkAuthorization(username, card);
             if (authorizationCheckResult.getKey().getStatusCode() != HttpStatus.OK) {
                 return authorizationCheckResult.getKey();
             }
@@ -174,7 +174,7 @@ public class CardController {
         Optional<Card> optionalCard = cardRepository.findById(id);
         if (optionalCard.isPresent()) {
             Card card = optionalCard.get();
-            AbstractMap.SimpleEntry<ResponseEntity<?>, Board> authorizationCheckResult = checkAuthorization(username, card, OkStatusBodyContent.EMPTY);
+            AbstractMap.SimpleEntry<ResponseEntity<?>, Board> authorizationCheckResult = checkAuthorization(username, card);
             if (authorizationCheckResult.getKey().getStatusCode() != HttpStatus.OK) {
                 return authorizationCheckResult.getKey();
             }
@@ -208,7 +208,7 @@ public class CardController {
 
         if (optionalCard.isPresent()) {
             Card foundCard = optionalCard.get();
-            AbstractMap.SimpleEntry<ResponseEntity<?>, Board> authorizationCheckResult = checkAuthorization(username, foundCard, CardController.OkStatusBodyContent.EMPTY);
+            AbstractMap.SimpleEntry<ResponseEntity<?>, Board> authorizationCheckResult = checkAuthorization(username, foundCard);
             if (authorizationCheckResult.getKey().getStatusCode() != HttpStatus.OK) {
                 return authorizationCheckResult.getKey();
             }
@@ -247,7 +247,7 @@ public class CardController {
     }
 
     //Returns pair of ResponseEntity (key) and parent board of object (value)
-    private AbstractMap.SimpleEntry<ResponseEntity<?>, Board> checkAuthorization(String username, Card card, CardController.OkStatusBodyContent bodyContent) {
+    private AbstractMap.SimpleEntry<ResponseEntity<?>, Board> checkAuthorization(String username, Card card) {
         if (card.getParentBoardId() == null || card.getParentBoardId().isEmpty()) {
             return new AbstractMap.SimpleEntry<>(new ResponseEntity<>("Card does not contain parent board ID", HttpStatus.BAD_REQUEST), null);
         }
@@ -255,14 +255,7 @@ public class CardController {
         if (optionalBoard.isPresent()) {
             Board board = optionalBoard.get();
             if (board.getUserPermissionsMap().containsKey(username)) {
-                switch (bodyContent) {
-                    case EMPTY:
-                        return new AbstractMap.SimpleEntry<>(new ResponseEntity<>(HttpStatus.OK), board);
-                    case CARD:
-                        return new AbstractMap.SimpleEntry<>(new ResponseEntity<>(card, HttpStatus.OK), board);
-                    default:
-                        throw new IllegalArgumentException();
-                }
+                return new AbstractMap.SimpleEntry<>(new ResponseEntity<>(HttpStatus.OK), board);
             }
             return new AbstractMap.SimpleEntry<>(new ResponseEntity<>(HttpStatus.UNAUTHORIZED), null);
         }
