@@ -49,12 +49,27 @@ public class UserController {
     }
 
     @RequestMapping(method= RequestMethod.POST, value="/user/avatar")
-    public ResponseEntity<?> postUser(@RequestBody String avatar, Principal principal) {
+    public ResponseEntity<?> postUserAvatar(@RequestBody String avatar, Principal principal) {
         String userName = principal.getName();
-        Optional<User> optionalUser = userRepository.findByUsernameExcludingSensitiveData(userName);
+        Optional<User> optionalUser = userRepository.findByUsername(userName);
         if (optionalUser.isPresent()) {
             User user = optionalUser.get();
             user.setAvatar(avatar);
+            userRepository.save(user);
+            return new ResponseEntity<>(HttpStatus.OK);
+        }
+        else {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+    }
+
+    @RequestMapping(method= RequestMethod.POST, value="/user/password")
+    public ResponseEntity<?> postUserPassword(@RequestBody String password, Principal principal) {
+        String userName = principal.getName();
+        Optional<User> optionalUser = userRepository.findByUsername(userName);
+        if (optionalUser.isPresent()) {
+            User user = optionalUser.get();
+            user.setPassword(passwordEncoder.encode(password));
             userRepository.save(user);
             return new ResponseEntity<>(HttpStatus.OK);
         }
