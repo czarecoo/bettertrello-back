@@ -57,7 +57,7 @@ public class CardController {
             boardController.addActivityToBoard(authorizationCheckResult.getValue(), activityData);
             //-------------------------------------------------------------------
             //Add card creation info to created card
-            card.getActivities().add(activityData);
+            card.getActivities().add(0,activityData);
             //-------------------------------------------------------------------
 
             return new ResponseEntity<>(cardRepository.save(card), HttpStatus.CREATED);
@@ -113,7 +113,7 @@ public class CardController {
             }
             activityData.setParentBoardId(card.getParentBoardId());
             activityData.setParentCardId(card.getId());
-            card.getActivities().add(activityData);
+            card.getActivities().add(0,activityData);
 
             for(Iterator<String> iterator = card.getObserverUserNames().iterator();iterator.hasNext();){
                 Optional<User> optionalUser = userRepository.findByUsername(iterator.next());
