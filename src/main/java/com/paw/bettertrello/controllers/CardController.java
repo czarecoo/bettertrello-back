@@ -209,6 +209,13 @@ public class CardController {
                 handlePatchingActivityData(patchData, foundCard, username, authorizationCheckResult.getValue());
             }
 
+            //Add deadline change info to board-----------------------------------------
+            if (patchData.getCardDeadlineDate() != null) {
+                ActivityData activityData = BoardController.prepareDeadlineUpdateActivity(foundCard, patchData, username);
+                boardController.addActivityToBoard(authorizationCheckResult.getValue(), activityData);
+            }
+            //-----------------------------------------------------------------------
+
             foundCard = ControllerUtils.patchObject(foundCard, patchData);
 
             //Add the last activity to board-----------------------------------------

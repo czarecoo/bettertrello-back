@@ -252,6 +252,15 @@ public class BoardController {
         return boardActivityData;
     }
 
+    public static ActivityData prepareDeadlineUpdateActivity(Card oldCard, Card newCard, String username) {
+        ActivityData boardActivityData = new ActivityData();
+        boardActivityData.setOwnerUsername(username);
+        boardActivityData.setDate(ControllerUtils.getCurrentDate());
+        boardActivityData.setEditable(false);
+        boardActivityData.setData(" changed deadline on" + oldCard.getName() + " from " + oldCard.getCardDeadlineDate() + " to " + newCard.getCardDeadlineDate());
+        return boardActivityData;
+    }
+
     public static ActivityData prepareListCreationActivity(CardList cardList, String username) {
         ActivityData boardActivityData = new ActivityData();
         boardActivityData.setOwnerUsername(username);
