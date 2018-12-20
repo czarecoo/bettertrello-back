@@ -67,6 +67,7 @@ public class CardController {
         }
     }
 
+    @ApiOperation(value = "Copies card and ads to another chosen by user list",response = CardList.class)
     @RequestMapping(method=RequestMethod.POST, value="/cards/{id}/copy")
     public ResponseEntity<?> copyCardToList(@RequestBody CopyCardDestination copyCardDestination, @PathVariable String id, Principal principal){
         String username = principal.getName();
@@ -100,7 +101,7 @@ public class CardController {
         }
     }
 
-    @ApiOperation(value = "Add an activity to card",response = Board.class)
+    @ApiOperation(value = "Add an activity to card",response = Card.class)
     @RequestMapping(method= RequestMethod.POST, value="/cards/{id}/activities")
     public ResponseEntity<?> postActivityToCard(@RequestBody ActivityData activityData, @PathVariable String id, Principal principal) {
         String username = principal.getName();
@@ -141,6 +142,7 @@ public class CardController {
         }
     }
 
+    @ApiOperation(value = "Add username to observeruser list on card")
     @RequestMapping(method=RequestMethod.POST, value="/cards/{id}/observe")
     public ResponseEntity<?> observeCard(@PathVariable String id, Principal principal) {
         String username = principal.getName();
@@ -162,6 +164,7 @@ public class CardController {
         }
     }
 
+    @ApiOperation(value = "Delete username from observeruser list on card")
     @RequestMapping(method=RequestMethod.POST, value="/cards/{id}/unobserve")
     public ResponseEntity<?> unObserveCard(@PathVariable String id, Principal principal) {
         String username = principal.getName();
@@ -183,6 +186,7 @@ public class CardController {
         }
     }
 
+    @ApiOperation(value = "Updates card and adds an activity when something changed", response = Card.class)
     @RequestMapping(method=RequestMethod.PATCH, value="/cards/{id}")
     public ResponseEntity<?> patchCard(@PathVariable String id, @RequestBody Card patchData, Principal principal) {
 

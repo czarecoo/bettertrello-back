@@ -182,6 +182,7 @@ public class BoardController {
 
     }
 
+
     @RequestMapping(method=RequestMethod.PATCH, value="/boards/{id}")
     public ResponseEntity<?> patchBoard(@PathVariable String id, @RequestBody Board patchData, Principal principal) {
 

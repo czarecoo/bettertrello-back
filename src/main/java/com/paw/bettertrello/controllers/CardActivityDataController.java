@@ -7,6 +7,7 @@ import com.paw.bettertrello.repositories.BoardRepository;
 import com.paw.bettertrello.repositories.CardActivityDataRepository;
 import com.paw.bettertrello.repositories.CardRepository;
 import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -28,6 +29,7 @@ public class CardActivityDataController {
     @Autowired
     BoardRepository boardRepository;
 
+    @ApiOperation(value = "Update activity",response = Optional.class)
     @RequestMapping(method=RequestMethod.PATCH, value="/activities/{id}")
     public ResponseEntity<?> patchActivity(@PathVariable String id, @RequestBody ActivityData patchData, Principal principal) {
         String username = principal.getName();
@@ -66,6 +68,7 @@ public class CardActivityDataController {
         }
     }
 
+    @ApiOperation(value = "Delete an activity")
     @RequestMapping(method=RequestMethod.DELETE, value="/activities/{id}")
     public ResponseEntity<?> deleteActivity(@PathVariable String id, Principal principal) {
         String username = principal.getName();

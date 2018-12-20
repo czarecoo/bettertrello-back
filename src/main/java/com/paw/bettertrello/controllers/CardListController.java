@@ -133,7 +133,7 @@ public class CardListController {
         }
 
     }
-
+    @ApiOperation(value = "Updates a list")
     @RequestMapping(method=RequestMethod.PATCH, value="/lists/{id}")
     public ResponseEntity<?> patchList(@PathVariable String id, @RequestBody CardList patchData, Principal principal) {
 

@@ -2,6 +2,8 @@ package com.paw.bettertrello.controllers;
 
 import com.paw.bettertrello.models.User;
 import com.paw.bettertrello.repositories.UserRepository;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.http.HttpStatus;
@@ -15,6 +17,7 @@ import java.util.ArrayList;
 import java.util.Optional;
 
 @RestController
+@Api(description="Operations pertaining to users in application")
 @CrossOrigin(origins = "http://localhost:3000", maxAge = 3600)
 public class UserController {
 
@@ -24,6 +27,7 @@ public class UserController {
     @Autowired
     public PasswordEncoder passwordEncoder;
 
+    @ApiOperation(value = "Add a user")
     @RequestMapping(method= RequestMethod.POST, value="/users")
     public ResponseEntity<?> postUser(@RequestBody User user) {
 
@@ -48,6 +52,8 @@ public class UserController {
         }
     }
 
+
+    @ApiOperation(value = "Search for user", response = User.class)
     @RequestMapping(method=RequestMethod.GET, value="/user/")
     public ResponseEntity<?> getUser(Principal principal) {
         String userName = principal.getName();
