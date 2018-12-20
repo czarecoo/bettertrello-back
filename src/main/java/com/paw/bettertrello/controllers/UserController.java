@@ -24,6 +24,18 @@ public class UserController {
     @Autowired
     public PasswordEncoder passwordEncoder;
 
+    @RequestMapping(method=RequestMethod.GET, value="/users/notifications")
+    public ResponseEntity<?> getUserNotifications(Principal principal) {
+        String userName = principal.getName();
+        Optional<User> optionalUser = userRepository.findByUsername(userName);
+        if (optionalUser.isPresent()) {
+            User user = optionalUser.get();
+            return new ResponseEntity<>(user.getNotifications(), HttpStatus.OK);
+        } else {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+    }
+    
     @RequestMapping(method= RequestMethod.POST, value="/users")
     public ResponseEntity<?> postUser(@RequestBody User user) {
 
