@@ -85,6 +85,7 @@ public class CardActivityDataController {
             }
             else {
                 Card card = parentCard.get();
+                System.out.println(card.getCheckListItems());
                 card.getCheckListItems().removeIf(a -> a.getId().equals(foundActivityData.getId()));
                 cardRepository.save(card);
             }
