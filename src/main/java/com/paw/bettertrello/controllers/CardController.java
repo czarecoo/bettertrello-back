@@ -71,7 +71,7 @@ public class CardController {
     public ResponseEntity<?> copyCardToList(@RequestBody CopyCardDestination copyCardDestination, @PathVariable String id, Principal principal){
         String username = principal.getName();
         Optional<Card> optionalCard = cardRepository.findById(id);
-        Optional<CardList> optionalCardListToPaste = cardListRepository.findById(copyCardDestination.listId);
+        Optional<CardList> optionalCardListToPaste = cardListRepository.findById(copyCardDestination.getListId());
         if (optionalCard.isPresent() && optionalCardListToPaste.isPresent()) {
             Card card = optionalCard.get();
             CardList cardListToPaste = optionalCardListToPaste.get();
@@ -84,11 +84,12 @@ public class CardController {
                 return authorizationCheckResultForCardList.getKey();
             }
             card.setParentBoardId(cardListToPaste.getParentBoardId());
+            card.setName(copyCardDestination.getNewName());
             card.setId(null);
-            if(copyCardDestination.listPosition<0 || copyCardDestination.listPosition>cardListToPaste.getCards().size())
+            if(copyCardDestination.getListPosition()<0 || copyCardDestination.getListPosition()>cardListToPaste.getCards().size())
                 return new ResponseEntity<>("Selected list position is out of bounds of selected list", HttpStatus.BAD_REQUEST);
             else{
-                cardListToPaste.getCards().add(copyCardDestination.listPosition,card);
+                cardListToPaste.getCards().add(copyCardDestination.getListPosition(),card);
                 return new ResponseEntity<>(cardListRepository.save(cardListToPaste), HttpStatus.CREATED);
             }
         }
@@ -276,8 +277,4 @@ public class CardController {
         return activityData;
     }
 
-    private class CopyCardDestination {
-        String listId;
-        int listPosition;
-    }
 }
