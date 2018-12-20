@@ -116,7 +116,7 @@ public class CardController {
             }
 
             //Add activity to board-------------------------------------------------
-            card.getActivities().add(0, prepareCommentCreationActivity(activityData, username));
+            card.getActivities().add(0, prepareCommentCreationActivity(activityData, card, username));
             //-----------------------------------------------------------------------
 
             for(Iterator<String> iterator = card.getObserverUserNames().iterator();iterator.hasNext();){
@@ -209,7 +209,7 @@ public class CardController {
 
             //Handle list of ActivityData from patchData (add date and user to the last element that we suppose it was appended)
             if (patchData.getActivities() != null) {
-                handlePatchingActivityData(patchData, foundCard, username, authorizationCheckResult.getValue());
+                handlePatchingActivityData(patchData, foundCard, username);
             }
 
             //Add deadline change info to board--------------------------------------
@@ -263,10 +263,10 @@ public class CardController {
         }
     }
 
-    private Card handlePatchingActivityData(Card patchData, Card toBePatched, String username, Board parentBoard) {
+    private Card handlePatchingActivityData(Card patchData, Card toBePatched, String username) {
         List<ActivityData> activities = patchData.getActivities();
         ActivityData lastActivity = patchData.getActivities().get(activities.size() - 1);
-        prepareCommentCreationActivity(lastActivity, username);
+        prepareCommentCreationActivity(lastActivity, toBePatched, username);
         return patchData;
     }
 
@@ -278,7 +278,7 @@ public class CardController {
         return activityData;
     }
 
-    public static ActivityData prepareCommentCreationActivity(ActivityData activityData, String username) {
+    public static ActivityData prepareCommentCreationActivity(ActivityData activityData, Card parentCard, String username) {
         if (activityData.getOwnerUsername() == null || activityData.getOwnerUsername().isEmpty()) {
             activityData.setOwnerUsername(username);
         }
@@ -289,10 +289,10 @@ public class CardController {
             activityData.setData("");
         }
         if (activityData.getParentCardId() == null) {
-            activityData.setParentCardId(activityData.getId());
+            activityData.setParentCardId(parentCard.getId());
         }
         if (activityData.getParentBoardId() == null) {
-            activityData.setParentBoardId(activityData.getId());
+            activityData.setParentBoardId(parentCard.getParentBoardId());
         }
         activityData.setEditable(true);
         return activityData;
