@@ -235,7 +235,7 @@ public class CardController {
         Optional<Board> optionalBoard = boardRepository.findById(card.getParentBoardId());
         if (optionalBoard.isPresent()) {
             Board board = optionalBoard.get();
-            if (board.getOwnerUsernames().contains(username)) {
+            if (board.getUserPermissionsMap().containsKey(username)) {
                 switch (bodyContent) {
                     case EMPTY:
                         return new AbstractMap.SimpleEntry<>(new ResponseEntity<>(HttpStatus.OK), board);

@@ -1,12 +1,7 @@
 package com.paw.bettertrello.controllers;
 
-import com.paw.bettertrello.models.ActivityData;
-import com.paw.bettertrello.models.Board;
-import com.paw.bettertrello.models.Card;
-import com.paw.bettertrello.models.CardList;
+import com.paw.bettertrello.models.*;
 import com.paw.bettertrello.repositories.BoardRepository;
-import com.paw.bettertrello.repositories.CardListRepository;
-import com.paw.bettertrello.repositories.CardRepository;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
@@ -16,13 +11,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.lang.reflect.Field;
 import java.security.Principal;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
+import java.util.*;
 
 
 @RestController
@@ -41,7 +31,7 @@ public class BoardController {
     @ApiOperation(value = "Search all boards",response = Optional.class)
     @RequestMapping(method=RequestMethod.GET, value="/boards")
     public ResponseEntity<?> getBoards(Principal principal) {
-        List<Board> boardList = boardRepository.findAllByOwnerUsernamesContaining(principal.getName());
+        List<Board> boardList = boardRepository.findAllByOwnerUsernamesContaining("userPermissionsMap." + principal.getName());
         boardList.removeIf(Board::isArchived);
         return new ResponseEntity<>(boardList, HttpStatus.OK);
     }
@@ -53,7 +43,7 @@ public class BoardController {
         Optional<Board> optionalBoard = boardRepository.findById(id);
         if (optionalBoard.isPresent()) {
             Board board = optionalBoard.get();
-            if (board.getOwnerUsernames().contains(username)) {
+            if (board.getUserPermissionsMap().containsKey(username)) {
                 for(CardList cardList: board.getCardLists()){
                     cardList.getCards().removeIf(Card::isArchived);
                 }
@@ -71,7 +61,7 @@ public class BoardController {
         Optional<Board> optionalBoard = boardRepository.findById(id);
         if (optionalBoard.isPresent()) {
             Board board = optionalBoard.get();
-            if (board.getOwnerUsernames().contains(username)) {
+            if (board.getUserPermissionsMap().containsKey(username)) {
                 for(CardList cardList: board.getCardLists()){
                     cardList.getCards().removeIf(Card::isArchived);
                 }
@@ -88,16 +78,36 @@ public class BoardController {
 
         String username = principal.getName();
 
-        if (board.getOwnerUsernames() == null) {
-            board.setOwnerUsernames(Arrays.asList(username));
+        if (board.getUserPermissionsMap() == null) {
+            HashMap<String, BoardPermission> map = new HashMap<>();
+            map.put(username, BoardPermission.OWNER);
+            board.setUserPermissionsMap(map);
         }
-        else if (!board.getOwnerUsernames().contains(username)) {
-            board.getOwnerUsernames().add(username);
+        else if (!board.getUserPermissionsMap().containsKey(username)) {
+            board.getUserPermissionsMap().put(username, BoardPermission.OWNER);
         }
         if (board.getActivities() == null) {
             board.setActivities(new ArrayList<>());
         }
+        if (board.getCardLists() == null) {
+            board.setCardLists(new ArrayList<>());
+        }
         return new ResponseEntity<>(boardRepository.save(board), HttpStatus.CREATED);
+    }
+
+    @ApiOperation(value = "Add an User to Board",response = Board.class)
+    @RequestMapping(method=RequestMethod.POST, value="/boards/{id}/users")
+    public ResponseEntity<?> postUserToBoard(@PathVariable String id, Principal principal) {
+        String username = principal.getName();
+        Optional<Board> optionalBoard = boardRepository.findById(id);
+        if(optionalBoard.isPresent()) {
+            Board board = optionalBoard.get();
+            board.getUserPermissionsMap().put(username, BoardPermission.NORMAL_USER);
+            return new ResponseEntity<>(boardRepository.save(board), HttpStatus.CREATED);
+        }
+        else {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
     }
 
     @ApiOperation(value = "Add a List to Board",response = Board.class)
@@ -110,7 +120,7 @@ public class BoardController {
             if (cardList.getParentBoardId() != null && !cardList.getParentBoardId().equals(id)) {
                 return new ResponseEntity<>(HttpStatus.CONFLICT);
             }
-            if (!board.getOwnerUsernames().contains(username)) {
+            if (!board.getUserPermissionsMap().containsKey(username)) {
                 return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
             }
             if (board.getCardLists() == null) {
@@ -134,7 +144,7 @@ public class BoardController {
 
         String username = principal.getName();
 
-        if (!board.getOwnerUsernames().contains(username)) {
+        if (!board.getUserPermissionsMap().containsKey(username) && board.getUserPermissionsMap().get(username) != BoardPermission.OWNER) {
             return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
         }
 
@@ -152,6 +162,14 @@ public class BoardController {
 
         if (optionalBoard.isPresent()) {
             Board foundBoard = optionalBoard.get();
+
+            //Non-owner cannot archive a board
+            if (foundBoard.isArchived()) {
+                if (!board.getUserPermissionsMap().containsKey(username) && board.getUserPermissionsMap().get(username) != BoardPermission.OWNER) {
+                    return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+                }
+            }
+
             if(foundBoard.equals(board)) {
                 return new ResponseEntity<>(null, HttpStatus.FOUND);
             }else {
@@ -183,7 +201,15 @@ public class BoardController {
 
         if (optionalBoard.isPresent()) {
             Board foundBoard = optionalBoard.get();
-            if (!foundBoard.getOwnerUsernames().contains(username)) {
+
+            //Non-owner cannot archive a board
+            if (patchData.isArchived()) {
+                if (!foundBoard.getUserPermissionsMap().containsKey(username) && foundBoard.getUserPermissionsMap().get(username) != BoardPermission.OWNER) {
+                    return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+                }
+            }
+
+            if (!foundBoard.getUserPermissionsMap().containsKey(username)) {
                 return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
             }
 
@@ -206,7 +232,7 @@ public class BoardController {
         Optional<Board> optionalBoard = boardRepository.findById(id);
         if (optionalBoard.isPresent()) {
             Board board = optionalBoard.get();
-            if (board.getOwnerUsernames().contains(username)) {
+            if (!board.getUserPermissionsMap().containsKey(username) && board.getUserPermissionsMap().get(username) != BoardPermission.OWNER) {
                 boardRepository.delete(board);
                 return new ResponseEntity<>(HttpStatus.OK);
             }

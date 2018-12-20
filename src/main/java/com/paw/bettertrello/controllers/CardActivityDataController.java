@@ -3,12 +3,10 @@ package com.paw.bettertrello.controllers;
 import com.paw.bettertrello.models.ActivityData;
 import com.paw.bettertrello.models.Board;
 import com.paw.bettertrello.models.Card;
-import com.paw.bettertrello.models.CardList;
 import com.paw.bettertrello.repositories.BoardRepository;
 import com.paw.bettertrello.repositories.CardActivityDataRepository;
 import com.paw.bettertrello.repositories.CardRepository;
 import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -16,7 +14,6 @@ import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
 import java.util.AbstractMap;
-import java.util.ArrayList;
 import java.util.Optional;
 
 @RestController
@@ -110,7 +107,7 @@ public class CardActivityDataController {
         Optional<Board> optionalBoard = boardRepository.findById(activityData.getParentBoardId());
         if (optionalBoard.isPresent()) {
             Board board = optionalBoard.get();
-            if (board.getOwnerUsernames().contains(username)) {
+            if (board.getUserPermissionsMap().containsKey(username)) {
                     return new AbstractMap.SimpleEntry<>(new ResponseEntity<>(HttpStatus.OK), board);
             }
             return new AbstractMap.SimpleEntry<>(new ResponseEntity<>(HttpStatus.UNAUTHORIZED), null);

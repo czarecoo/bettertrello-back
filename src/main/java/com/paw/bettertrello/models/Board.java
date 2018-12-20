@@ -8,6 +8,7 @@ import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.util.List;
+import java.util.Map;
 
 @Data
 @Document(collection = "boards")
@@ -18,7 +19,7 @@ public class Board {
     @ApiModelProperty(notes = "The name of the Board")
     String name;
     String color;
-    List<String> ownerUsernames;
+    Map<String, BoardPermission> userPermissionsMap;
     boolean isArchived;
     @DBRef
     @CascadeSave
