@@ -145,14 +145,19 @@ public class CardController {
     public ResponseEntity<?> observeCard(@PathVariable String id, Principal principal) {
         String username = principal.getName();
         Optional<Card> optionalCard = cardRepository.findById(id);
-        if (optionalCard.isPresent()) {
+        Optional<User> optionalUser = userRepository.findByUsername(username);
+        if (optionalCard.isPresent() && optionalUser.isPresent()) {
             Card card = optionalCard.get();
+            User user = optionalUser.get();
             AbstractMap.SimpleEntry<ResponseEntity<?>, Board> authorizationCheckResult = checkAuthorization(username, card, OkStatusBodyContent.EMPTY);
             if (authorizationCheckResult.getKey().getStatusCode() != HttpStatus.OK) {
                 return authorizationCheckResult.getKey();
             }
             if(card.getObserverUserNames() == null){
                 card.setObserverUserNames(new HashSet<>());
+            }
+            if(user.getNotifications() == null){
+                user.setNotifications(new ArrayList<>());
             }
             card.getObserverUserNames().add(username);
             return new ResponseEntity<>(cardRepository.save(card), HttpStatus.OK);
