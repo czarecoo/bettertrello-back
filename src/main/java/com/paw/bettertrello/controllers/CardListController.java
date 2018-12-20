@@ -91,7 +91,7 @@ public class CardListController {
             if (card.getCheckListItems() == null) {
                 card.setCheckListItems(new ArrayList<>());
             }
-            card.setIsArchived(true);
+            card.setIsArchived(false);
             cardList.getCards().add(card);
             return new ResponseEntity<>(cardListRepository.save(cardList), HttpStatus.CREATED);
         }
@@ -221,6 +221,7 @@ public class CardListController {
         activityData.setOwnerUsername(username);
         activityData.setData(" added card " + card.getName() + " to " + cardList.getName());
         activityData.setDate(ControllerUtils.getCurrentDate());
+        activityData.setIsEditable(false);
         return activityData;
     }
 }

@@ -284,6 +284,7 @@ public class CardController {
         activityData.setData(" added checklist item " + checkListItem.getData() + " to " + card.getName());
         activityData.setDate(ControllerUtils.getCurrentDate());
         activityData.setIsEditable(false);
+        activityData.setIsEdited(false);
         return activityData;
     }
 
@@ -304,6 +305,7 @@ public class CardController {
             activityData.setParentBoardId(parentCard.getParentBoardId());
         }
         activityData.setIsEditable(true);
+        activityData.setIsEdited(false);
         return activityData;
     }
 
