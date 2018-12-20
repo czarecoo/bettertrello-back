@@ -19,9 +19,9 @@ public class ActivityData {
     @ApiModelProperty(notes = "Date of creation of this activity")
     String date;
     @ApiModelProperty(notes = "Describes if activity can be edited")
-    boolean isEditable; //Activity is not editable by default
+    Boolean isEditable; //Activity is not editable by default
     @ApiModelProperty(notes = "Marks activity as edited if it was edited (and can be edited)")
-    boolean isEdited;
+    Boolean isEdited; //Marks activity as edited if it was edited (and can be edited)
     @ApiModelProperty(notes = "Id of board in which we got this activity")
     String parentBoardId;
     @ApiModelProperty(notes = "Id of card in which we got this activity")

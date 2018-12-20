@@ -14,7 +14,7 @@ public class CheckListItem {
     @ApiModelProperty(notes = "Data which describes done checklistitem")
     String data;
     @ApiModelProperty(notes = "Flag describing if checklistitem is done")
-    boolean isDone;
+    Boolean isDone;
     @ApiModelProperty(notes = "Id of board in which we got this checklistitem")
     String parentBoardId;
     @ApiModelProperty(notes = "Id of card in which we got this checklistitem")

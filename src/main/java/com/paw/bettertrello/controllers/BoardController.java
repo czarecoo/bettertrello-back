@@ -2,13 +2,16 @@ package com.paw.bettertrello.controllers;
 
 import com.paw.bettertrello.models.*;
 import com.paw.bettertrello.repositories.BoardRepository;
+import com.paw.bettertrello.repositories.UserRepository;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
+import net.bytebuddy.asm.Advice;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.parameters.P;
 import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
@@ -22,6 +25,8 @@ public class BoardController {
 
     @Autowired
     BoardRepository boardRepository;
+    @Autowired
+    UserRepository userRepository;
 
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Successfully retrieved board")
@@ -32,7 +37,7 @@ public class BoardController {
     @RequestMapping(method=RequestMethod.GET, value="/boards")
     public ResponseEntity<?> getBoards(Principal principal) {
         List<Board> boardList = boardRepository.findAllByOwnerUsernamesContaining("userPermissionsMap." + principal.getName());
-        boardList.removeIf(Board::isArchived);
+        boardList.removeIf(Board::getIsArchived);
         return new ResponseEntity<>(boardList, HttpStatus.OK);
     }
 
@@ -45,7 +50,7 @@ public class BoardController {
             Board board = optionalBoard.get();
             if (board.getUserPermissionsMap().containsKey(username)) {
                 for(CardList cardList: board.getCardLists()){
-                    cardList.getCards().removeIf(Card::isArchived);
+                    cardList.getCards().removeIf(Card::getIsArchived);
                 }
                 return new ResponseEntity<>(board, HttpStatus.OK);
             }
@@ -63,7 +68,7 @@ public class BoardController {
             Board board = optionalBoard.get();
             if (board.getUserPermissionsMap().containsKey(username)) {
                 for(CardList cardList: board.getCardLists()){
-                    cardList.getCards().removeIf(Card::isArchived);
+                    cardList.getCards().removeIf(Card::getIsArchived);
                 }
                 return new ResponseEntity<>(board.getCardLists(), HttpStatus.OK);
             }
@@ -92,16 +97,20 @@ public class BoardController {
         if (board.getCardLists() == null) {
             board.setCardLists(new ArrayList<>());
         }
+        board.setIsArchived(false);
         return new ResponseEntity<>(boardRepository.save(board), HttpStatus.CREATED);
     }
 
     @ApiOperation(value = "Add an User to Board",response = Board.class)
-    @RequestMapping(method=RequestMethod.POST, value="/boards/{id}/users")
-    public ResponseEntity<?> postUserToBoard(@PathVariable String id, Principal principal) {
-        String username = principal.getName();
+    @RequestMapping(method=RequestMethod.POST, value="/boards/{id}/users/{username}")
+    public ResponseEntity<?> postUserToBoard(@PathVariable String id, @PathVariable String username, Principal principal) {
+        String addingUserUsername = principal.getName();
         Optional<Board> optionalBoard = boardRepository.findById(id);
         if(optionalBoard.isPresent()) {
             Board board = optionalBoard.get();
+            if (!userRepository.findByUsername(username).isPresent()) {
+                return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+            }
             board.getUserPermissionsMap().put(username, BoardAuthority.NORMAL_USER);
             return new ResponseEntity<>(boardRepository.save(board), HttpStatus.CREATED);
         }
@@ -164,7 +173,7 @@ public class BoardController {
             Board foundBoard = optionalBoard.get();
 
             //Non-owner cannot archive a board
-            if (foundBoard.isArchived()) {
+            if (foundBoard.getIsArchived()) {
                 if (!board.getUserPermissionsMap().containsKey(username) && board.getUserPermissionsMap().get(username) != BoardAuthority.OWNER) {
                     return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
                 }
@@ -204,7 +213,7 @@ public class BoardController {
             Board foundBoard = optionalBoard.get();
 
             //Non-owner cannot archive a board
-            if (patchData.isArchived()) {
+            if (patchData.getIsArchived() != null && patchData.getIsArchived()) {
                 if (!foundBoard.getUserPermissionsMap().containsKey(username) && foundBoard.getUserPermissionsMap().get(username) != BoardAuthority.OWNER) {
                     return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
                 }
@@ -248,7 +257,7 @@ public class BoardController {
         ActivityData boardActivityData = new ActivityData();
         boardActivityData.setOwnerUsername(activityData.getOwnerUsername());
         boardActivityData.setDate(activityData.getDate());
-        boardActivityData.setEditable(false);
+        boardActivityData.setIsEditable(false);
         boardActivityData.setData(" added comment on " + cardName + " \"" + activityData.getData() + "\"");
         return boardActivityData;
     }
@@ -257,8 +266,8 @@ public class BoardController {
         ActivityData boardActivityData = new ActivityData();
         boardActivityData.setOwnerUsername(username);
         boardActivityData.setDate(ControllerUtils.getCurrentDate());
-        boardActivityData.setEditable(false);
-        boardActivityData.setData(" changed deadline on" + oldCard.getName() + " from " + oldCard.getCardDeadlineDate() + " to " + newCard.getCardDeadlineDate());
+        boardActivityData.setIsEditable(false);
+        boardActivityData.setData(" changed deadline of " + oldCard.getName() + " from " + oldCard.getCardDeadlineDate() + " to " + newCard.getCardDeadlineDate());
         return boardActivityData;
     }
 
@@ -266,7 +275,7 @@ public class BoardController {
         ActivityData boardActivityData = new ActivityData();
         boardActivityData.setOwnerUsername(username);
         boardActivityData.setDate(ControllerUtils.getCurrentDate());
-        boardActivityData.setEditable(false);
+        boardActivityData.setIsEditable(false);
         boardActivityData.setData(username + " copied "+ copyCardDestination.getNewName() + " from " + cardName + " to list " + copiedCardListName);
         return boardActivityData;
     }
@@ -275,7 +284,7 @@ public class BoardController {
         ActivityData boardActivityData = new ActivityData();
         boardActivityData.setOwnerUsername(username);
         boardActivityData.setDate(ControllerUtils.getCurrentDate());
-        boardActivityData.setEditable(false);
+        boardActivityData.setIsEditable(false);
         boardActivityData.setData(" added list " + cardList.getName() + " to this board");
         return boardActivityData;
     }
@@ -284,7 +293,7 @@ public class BoardController {
         ActivityData boardActivityData = new ActivityData();
         boardActivityData.setOwnerUsername(username);
         boardActivityData.setDate(ControllerUtils.getCurrentDate());
-        boardActivityData.setEditable(false);
+        boardActivityData.setIsEditable(false);
         boardActivityData.setData(" renamed list " + oldCardList.getName() + " to " + newCardList.getName());
         return boardActivityData;
     }
@@ -293,7 +302,7 @@ public class BoardController {
         ActivityData boardActivityData = new ActivityData();
         boardActivityData.setOwnerUsername(username);
         boardActivityData.setDate(ControllerUtils.getCurrentDate());
-        boardActivityData.setEditable(false);
+        boardActivityData.setIsEditable(false);
         boardActivityData.setData(" renamed this board " + oldBoard.getName() + " to " + newBoard.getName());
         return boardActivityData;
     }

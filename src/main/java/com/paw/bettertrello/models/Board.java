@@ -23,7 +23,7 @@ public class Board {
     @ApiModelProperty(notes = "Collection describing users and their permisions on board")
     Map<String, BoardAuthority> userPermissionsMap;
     @ApiModelProperty(notes = "Flag describing if board is archived")
-    boolean isArchived;
+    Boolean isArchived;
     @DBRef
     @CascadeSave
     @ApiModelProperty(notes = "Collections on activietes done on board")

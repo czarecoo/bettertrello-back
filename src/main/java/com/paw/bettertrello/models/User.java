@@ -23,6 +23,7 @@ public class User implements UserDetails {
     @ApiModelProperty(notes = "Username of the user ")
     String username;
     String password;
+    String avatar;
     @DBRef
     @CascadeSave
     List<ActivityData> notifications;

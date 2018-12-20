@@ -24,7 +24,7 @@ public class Card {
     @ApiModelProperty(notes = "Describes more about the task from this card")
     String description;
     @ApiModelProperty(notes = "Flag describing if card is archived")
-    boolean isArchived;
+    Boolean isArchived;
     @ApiModelProperty(notes = "Date in which the task must be done")
     String cardDeadlineDate;
     @ApiModelProperty(notes = "Collection of usernames whose will get notification about new comment or different activity")
