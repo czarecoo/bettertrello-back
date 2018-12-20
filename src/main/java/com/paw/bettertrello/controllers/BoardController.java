@@ -261,6 +261,15 @@ public class BoardController {
         return boardActivityData;
     }
 
+    public static ActivityData prepareCopyCardActivity(String cardName, CopyCardDestination copyCardDestination,String copiedCardListName, String username) {
+        ActivityData boardActivityData = new ActivityData();
+        boardActivityData.setOwnerUsername(username);
+        boardActivityData.setDate(ControllerUtils.getCurrentDate());
+        boardActivityData.setEditable(false);
+        boardActivityData.setData(username + " copied "+ copyCardDestination.getNewName() + " from " + cardName + " to list " + copiedCardListName);
+        return boardActivityData;
+    }
+
     public static ActivityData prepareListCreationActivity(CardList cardList, String username) {
         ActivityData boardActivityData = new ActivityData();
         boardActivityData.setOwnerUsername(username);

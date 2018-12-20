@@ -83,6 +83,7 @@ public class CardController {
             else if(authorizationCheckResultForCardList.getKey().getStatusCode() != HttpStatus.OK) {
                 return authorizationCheckResultForCardList.getKey();
             }
+            ActivityData activityData = boardController.prepareCopyCardActivity(card.getName(),copyCardDestination, cardListToPaste.getName(),username);
             card.setParentBoardId(cardListToPaste.getParentBoardId());
             card.setName(copyCardDestination.getNewName());
             card.setId(null);
@@ -90,6 +91,7 @@ public class CardController {
                 return new ResponseEntity<>("Selected list position is out of bounds of selected list", HttpStatus.BAD_REQUEST);
             else{
                 cardListToPaste.getCards().add(copyCardDestination.getListPosition(),card);
+                boardController.addActivityToBoard(authorizationCheckResultForCard.getValue(), activityData);
                 return new ResponseEntity<>(cardListRepository.save(cardListToPaste), HttpStatus.CREATED);
             }
         }
