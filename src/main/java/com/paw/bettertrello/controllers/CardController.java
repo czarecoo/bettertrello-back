@@ -118,7 +118,6 @@ public class CardController {
             //Add activity to board-------------------------------------------------
             card.getActivities().add(0, prepareCommentCreationActivity(activityData, card, username));
             //-----------------------------------------------------------------------
-
             for(Iterator<String> iterator = card.getObserverUserNames().iterator();iterator.hasNext();){
                 Optional<User> optionalUser = userRepository.findByUsername(iterator.next());
                 if (optionalUser.isPresent()) {
