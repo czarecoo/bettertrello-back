@@ -221,10 +221,12 @@ public class CardController {
 
             foundCard = ControllerUtils.patchObject(foundCard, patchData);
 
-            //Add the last activity to board-----------------------------------------
-            ActivityData activityData = BoardController.prepareCommentCreationActivity(foundCard.getActivities().get(foundCard.getActivities().size() - 1), foundCard.getName());
-            boardController.addActivityToBoard(authorizationCheckResult.getValue(), activityData);
-            //-----------------------------------------------------------------------
+            if (patchData.getActivities() != null) {
+                //Add the last activity to board-----------------------------------------
+                ActivityData activityData = BoardController.prepareCommentCreationActivity(foundCard.getActivities().get(foundCard.getActivities().size() - 1), foundCard.getName());
+                boardController.addActivityToBoard(authorizationCheckResult.getValue(), activityData);
+                //-----------------------------------------------------------------------
+            }
 
             return new ResponseEntity<>(cardRepository.save(foundCard), HttpStatus.OK);
         }

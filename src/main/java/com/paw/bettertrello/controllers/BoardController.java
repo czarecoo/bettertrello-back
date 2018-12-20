@@ -257,7 +257,7 @@ public class BoardController {
         boardActivityData.setOwnerUsername(username);
         boardActivityData.setDate(ControllerUtils.getCurrentDate());
         boardActivityData.setEditable(false);
-        boardActivityData.setData(" changed deadline on" + oldCard.getName() + " from " + oldCard.getCardDeadlineDate() + " to " + newCard.getCardDeadlineDate());
+        boardActivityData.setData(" changed deadline of " + oldCard.getName() + " from " + oldCard.getCardDeadlineDate() + " to " + newCard.getCardDeadlineDate());
         return boardActivityData;
     }
 
