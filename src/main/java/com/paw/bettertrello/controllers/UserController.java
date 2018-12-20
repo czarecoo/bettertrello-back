@@ -48,11 +48,23 @@ public class UserController {
         }
     }
 
+    @RequestMapping(method=RequestMethod.GET, value="/users/notifications")
+    public ResponseEntity<?> getUserNotifications(Principal principal) {
+        String userName = principal.getName();
+        Optional<User> optionalUser = userRepository.findByUsername(userName);
+        if (optionalUser.isPresent()) {
+            User user = optionalUser.get();
+            return new ResponseEntity<>(user.getNotifications(), HttpStatus.OK);
+        } else {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+    }
+
    @RequestMapping(method= RequestMethod.DELETE, value="/users/notifications")
     public ResponseEntity<?> deleteUserNotifications(Principal principal) {
         String userName = principal.getName();
-       Optional<User> optionalUser = userRepository.findByUsername(userName);
-       if (optionalUser.isPresent()) {
+        Optional<User> optionalUser = userRepository.findByUsername(userName);
+        if (optionalUser.isPresent()) {
            User user = optionalUser.get();
            user.getNotifications().clear();
            return new ResponseEntity<>(userRepository.save(user), HttpStatus.OK);
