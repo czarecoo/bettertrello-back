@@ -206,7 +206,7 @@ public class CardController {
 
             //Handle list of ActivityData from patchData (add date and user to the last element that we suppose it was appended)
             if (patchData.getActivities() != null) {
-                handlePatchingActivityData(patchData, username);
+                handlePatchingActivityData(patchData, foundCard, username, authorizationCheckResult.getValue());
             }
 
             foundCard = ControllerUtils.patchObject(foundCard, patchData);
@@ -253,7 +253,7 @@ public class CardController {
         }
     }
 
-    private Card handlePatchingActivityData(Card patchData, String username) {
+    private Card handlePatchingActivityData(Card patchData, Card toBePatched, String username, Board parentBoard) {
         List<ActivityData> activities = patchData.getActivities();
         ActivityData lastActivity = patchData.getActivities().get(activities.size() - 1);
         if (lastActivity.getOwnerUsername() == null || lastActivity.getOwnerUsername().isEmpty()) {
@@ -264,6 +264,12 @@ public class CardController {
         }
         if (lastActivity.getData() == null) {
             lastActivity.setData("");
+        }
+        if (lastActivity.getParentCardId() == null) {
+            lastActivity.setParentCardId(toBePatched.getId());
+        }
+        if (lastActivity.getParentBoardId() == null) {
+            lastActivity.setParentBoardId(parentBoard.getId());
         }
         lastActivity.setEditable(true);
         return patchData;
